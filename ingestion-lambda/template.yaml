@@ -13,16 +13,15 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: LeetSyncFunction
-      Handler: org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest
-      CodeUri: target/leetsync-0.0.1-SNAPSHOT-aws.jar
+      Handler: com.leetsync.ingestion.handler.SyncHandler::handleRequest
+      CodeUri: target/ingestion-lambda-1.0.0.jar
       Policies:
         - AmazonDynamoDBFullAccess
       Environment:
         Variables:
-          MAIN_CLASS: com.revolt7.leetsync.LeetSyncApplication
           DYNAMODB_TABLE_NAME: AcSubmissions
       Events:
-        DailyTrigger:
+        ScheduledSync:
           Type: Schedule
           Properties:
-            Schedule: rate(1 day)
+            Schedule: rate(10 minutes)

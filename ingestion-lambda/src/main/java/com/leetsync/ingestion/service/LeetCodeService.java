@@ -1,8 +1,7 @@
-package com.revolt7.leetsync.service;
+package com.leetsync.ingestion.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.revolt7.leetsync.model.AcSubmission;
-import org.springframework.stereotype.Service;
+import com.leetsync.shared.model.AcSubmission;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,14 +10,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-@Service
 public class LeetCodeService {
+
     public List<AcSubmission> fetchRecentAcceptedSubmissions(String username, int limit) throws IOException, InterruptedException {
-
         String queryJson = buildQueryJson(username, limit);
-
         String res = getHttpResponse(queryJson);
-
         return parseResponse(res);
     }
 
@@ -36,7 +32,7 @@ public class LeetCodeService {
             """, username, limit);
     }
 
-    String getHttpResponse(String queryJson) throws IOException, InterruptedException {
+    private String getHttpResponse(String queryJson) throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create("https://leetcode.com/graphql/"))
                 .header("Content-Type", "application/json")
@@ -44,21 +40,15 @@ public class LeetCodeService {
                 .build();
 
         HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<String> res =
-                client.send(req, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
         return res.body();
     }
 
     List<AcSubmission> parseResponse(String response) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            // Read the full JSON into a tree
             var root = mapper.readTree(response);
-
-            // Navigate to the array node
             var listNode = root.path("data").path("recentAcSubmissionList");
-
-            // Convert directly to List<AcSubmission>
             return mapper.readerForListOf(AcSubmission.class).readValue(listNode);
         } catch (IOException e) {
             e.printStackTrace();

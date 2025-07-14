@@ -1,4 +1,4 @@
-package com.revolt7.leetsync.model;
+package com.leetsync.shared.model;
 
 public class AcSubmission {
     private long id;

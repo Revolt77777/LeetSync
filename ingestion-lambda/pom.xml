@@ -4,47 +4,26 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.6</version>
+		<groupId>com.leetsync</groupId>
+		<artifactId>leetsync</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.revolt7</groupId>
-	<artifactId>leetsync</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>leetsync</name>
+	<artifactId>ingestion-lambda</artifactId>
+	<name>ingestion-lambda</name>
 	<description>A Lambda-based app to fetch LeetCode submissions and sync to DynamoDB daily.</description>
 
 	<properties>
 		<java.version>21</java.version>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2023.0.1</version> <!-- match your Spring Boot version -->
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
-		<!-- Spring Core -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>com.leetsync</groupId>
+			<artifactId>shared</artifactId>
+			<version>1.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-
 		<!-- AWS Lambda and DynamoDB -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -56,23 +35,32 @@
 			<artifactId>dynamodb</artifactId>
 			<version>2.25.28</version>
 		</dependency>
-
-		<!-- Spring Cloud Function AWS Support -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-function-adapter-aws</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-function-web</artifactId>
-		</dependency>
-
-
 		<!-- Dev and Testing -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.10.2</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.10.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>2.0.13</version>
 		</dependency>
 	</dependencies>
 
@@ -94,13 +82,13 @@
 					<execution>
 						<phase>package</phase>
 						<goals><goal>shade</goal></goals>
-						<configuration>
-							<!-- keep normal spring-boot jar, but also create a Lambda one -->
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>aws</shadedClassifierName>
-						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version> <!-- fully supports JUnit 5 + Java 21 -->
 			</plugin>
 		</plugins>
 	</build>

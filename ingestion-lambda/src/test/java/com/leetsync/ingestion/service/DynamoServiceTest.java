@@ -1,6 +1,6 @@
-package com.revolt7.leetsync.service;
+package com.leetsync.ingestion.service;
 
-import com.revolt7.leetsync.model.AcSubmission;
+import com.leetsync.shared.model.AcSubmission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -16,16 +16,12 @@ import static org.mockito.Mockito.*;
 class DynamoServiceTest {
 
     private DynamoDbClient mockDynamo;
-    private DynamoService  service;
+    private DynamoService service;
 
     @BeforeEach
     void setUp() {
-        mockDynamo = mock(DynamoDbClient.class);          // create the mock
-        service    = new DynamoService(mockDynamo);       // inject it via ctor
-
-        // supply the table name that Spring would @Value-inject
-        org.springframework.test.util.ReflectionTestUtils
-                .setField(service, "tableName", "Submissions");
+        mockDynamo = mock(DynamoDbClient.class);
+        service = new DynamoService(mockDynamo, "Submissions");  // pass table name directly
     }
 
     @Test
@@ -50,7 +46,7 @@ class DynamoServiceTest {
                 .thenThrow(ConditionalCheckFailedException.builder().build());
 
         AcSubmission sub = new AcSubmission(
-                123L, null, null, Instant.now().getEpochSecond());
+                123L, "Test", "test", Instant.now().getEpochSecond());
 
         assertFalse(service.storeIfNew(sub));
         verify(mockDynamo).putItem(any(PutItemRequest.class));

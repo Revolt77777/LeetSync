@@ -1,10 +1,8 @@
-package com.revolt7.leetsync.service;
+package com.leetsync.ingestion.service;
 
-import com.revolt7.leetsync.model.AcSubmission;
+import com.leetsync.shared.model.AcSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -14,18 +12,16 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 public class DynamoService {
 
     private static final Logger log = LoggerFactory.getLogger(DynamoService.class);
 
     private final DynamoDbClient dynamoDbClient;
+    private final String tableName;
 
-    @Value("${DYNAMODB_TABLE_NAME}")
-    private String tableName;
-
-    public DynamoService(DynamoDbClient dynamoDbClient) {
+    public DynamoService(DynamoDbClient dynamoDbClient, String tableName) {
         this.dynamoDbClient = dynamoDbClient;
+        this.tableName = tableName;
     }
 
     public boolean storeIfNew(AcSubmission submission) {
@@ -52,7 +48,7 @@ public class DynamoService {
             log.info("Submission with ID {} already exists. Skipping.", idStr);
             return false;
         } catch (DynamoDbException e) {
-            log.error("DynamoDB error while storing ID {}: {}", idStr, e.getMessage(), e);
+            log.error("DynamoDB error while storing ID {}: {}", idStr, e.getMessage());
             return false;
         }
     }
