@@ -1,4 +1,4 @@
-package com.leetsync.api.rest_api_server;
+package com.leetsync.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

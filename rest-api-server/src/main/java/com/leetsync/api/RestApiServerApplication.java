@@ -1,4 +1,4 @@
-package com.leetsync.api.rest_api_server;
+package com.leetsync.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

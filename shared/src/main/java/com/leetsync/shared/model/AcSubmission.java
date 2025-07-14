@@ -31,6 +31,22 @@ public class AcSubmission {
         return timestamp;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setTitleSlug(String titleSlug) {
+        this.titleSlug = titleSlug;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public String toString() {
         return "AcSubmission{" +
