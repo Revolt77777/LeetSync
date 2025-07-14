@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: LeetSync Lambda - syncs LeetCode submissions to DynamoDB daily
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: java21
+    MemorySize: 512
+
+Resources:
+  LeetSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LeetSyncFunction
+      Handler: org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest
+      CodeUri: target/leetsync-0.0.1-SNAPSHOT-aws.jar
+      Policies:
+        - AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          MAIN_CLASS: com.revolt7.leetsync.LeetSyncApplication
+          DYNAMODB_TABLE_NAME: AcSubmissions
+      Events:
+        DailyTrigger:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)

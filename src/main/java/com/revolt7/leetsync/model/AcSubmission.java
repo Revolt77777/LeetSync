@@ -3,13 +3,15 @@ package com.revolt7.leetsync.model;
 public class AcSubmission {
     private long id;
     private String title;
+    private String titleSlug;
     private long timestamp;
 
     public AcSubmission() {}
 
-    public AcSubmission(long id, String title, long timestamp) {
+    public AcSubmission(long id, String title, String titleSlug, long timestamp) {
         this.id = id;
         this.title = title;
+        this.titleSlug = titleSlug;
         this.timestamp = timestamp;
     }
 
@@ -19,6 +21,10 @@ public class AcSubmission {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getTitleSlug() {
+        return titleSlug;
     }
 
     public long getTimestamp() {

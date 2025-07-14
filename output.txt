@@ -1,0 +1,1 @@
+{"errorMessage":"Class not found: org.springframework.cloud.function.adapter.aws.FunctionInvoker","errorType":"java.lang.ClassNotFoundException"}

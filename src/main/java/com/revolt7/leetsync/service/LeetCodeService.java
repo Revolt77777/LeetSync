@@ -27,7 +27,7 @@ public class LeetCodeService {
             {
               "query": "query recentAcSubmissions($username: String!, $limit: Int!) { \
                          recentAcSubmissionList(username: $username, limit: $limit) { \
-                           id title timestamp } }",
+                           id title titleSlug timestamp } }",
               "variables": {
                 "username": "%s",
                 "limit": %d
