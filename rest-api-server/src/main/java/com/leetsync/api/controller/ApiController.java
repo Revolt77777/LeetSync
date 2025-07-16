@@ -8,7 +8,7 @@ import java.util.List;
 
 /** REST endpoints for accepted-submission data. */
 @RestController
-@RequestMapping("/AcSubmissions")
+@RequestMapping("/acsubmissions")
 public class ApiController {
 
     private final ApiService service;

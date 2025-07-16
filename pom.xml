@@ -3,6 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.6</version> <!-- or higher 3.x version -->
+        <relativePath/>
+    </parent>
 
     <groupId>com.leetsync</groupId>
     <artifactId>leetsync</artifactId>
@@ -13,6 +19,7 @@
         <module>shared</module>
         <module>ingestion-lambda</module>
         <module>rest-api-server</module>
+        <module>infrastructure</module>
     </modules>
 
     <name>LeetSync Project Root</name>

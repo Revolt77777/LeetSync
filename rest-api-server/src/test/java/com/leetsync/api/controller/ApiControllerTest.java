@@ -31,7 +31,7 @@ class ApiControllerTest {
 
         Mockito.when(apiService.getAllSubmissions()).thenReturn(stub);
 
-        mockMvc.perform(get("/submissions"))
+        mockMvc.perform(get("/acsubmissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].title").value("Two Sum"));
@@ -43,7 +43,7 @@ class ApiControllerTest {
                 .thenReturn(List.of(new AcSubmission(2L, "Add Two Numbers",
                         "add-two-numbers", 1_620_360_000L)));
 
-        mockMvc.perform(get("/submissions/123"))
+        mockMvc.perform(get("/acsubmissions/123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].titleSlug").value("add-two-numbers"));
     }
