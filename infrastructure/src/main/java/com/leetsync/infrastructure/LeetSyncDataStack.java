@@ -6,6 +6,7 @@ import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.GlobalSecondaryIndexProps;
+import software.amazon.awscdk.services.dynamodb.StreamViewType;
 import software.amazon.awscdk.services.dynamodb.Table;
 import software.constructs.Construct;
 
@@ -22,7 +23,7 @@ public class LeetSyncDataStack extends Stack {
     public LeetSyncDataStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
-        // AcSubmissions Table - Primary data store
+        // AcSubmissions Table - Primary data store with streams for ETL
         this.acSubmissionsTable = Table.Builder.create(this, "AcSubmissionsTable")
                 .tableName("AcSubmissions")
                 .partitionKey(Attribute.builder()
@@ -34,6 +35,7 @@ public class LeetSyncDataStack extends Stack {
                         .type(AttributeType.NUMBER)
                         .build())
                 .billingMode(BillingMode.PAY_PER_REQUEST)
+                .stream(StreamViewType.NEW_IMAGE)
                 .build();
 
         // Add GSI for problem-based queries
