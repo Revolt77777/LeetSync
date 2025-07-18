@@ -18,6 +18,7 @@
     <modules>
         <module>shared</module>
         <module>ingestion-lambda</module>
+        <module>problem-lambda</module>
         <module>rest-api-server</module>
         <module>infrastructure</module>
     </modules>

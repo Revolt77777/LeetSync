@@ -7,7 +7,6 @@ import software.amazon.awscdk.aws_apigatewayv2_integrations.HttpLambdaIntegratio
 import software.amazon.awscdk.services.apigatewayv2.AddRoutesOptions;
 import software.amazon.awscdk.services.apigatewayv2.HttpApi;
 import software.amazon.awscdk.services.apigatewayv2.HttpMethod;
-import software.amazon.awscdk.services.dynamodb.ITable;
 import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
@@ -19,11 +18,8 @@ import java.util.Map;
 
 public class LeetSyncApiStack extends Stack {
 
-    public LeetSyncApiStack(final Construct scope, final String id) {
+    public LeetSyncApiStack(final Construct scope, final String id, final Table acSubmissionsTable, final Table usersTable) {
         super(scope, id);
-
-        /* 1 ▶ import the existing DynamoDB table by name (no new table) */
-        ITable acTable = Table.fromTableName(this, "AcSubmissionsTable", "AcSubmissions");
 
         /* 2 ▶ Lambda packaging: Spring Boot JAR asset */
         Function apiFn = Function.Builder.create(this, "RestApiFunction")
@@ -33,11 +29,13 @@ public class LeetSyncApiStack extends Stack {
                 .timeout(Duration.seconds(15))
                 .code(Code.fromAsset("../rest-api-server/target/leetsync-api-1.0.0.jar"))
                 .environment(Map.of(
-                        "TABLE_NAME", "AcSubmissions"))
+                        "ACSUBMISSIONS_TABLE_NAME", acSubmissionsTable.getTableName(),
+                        "USERS_TABLE_NAME", usersTable.getTableName()))
                 .build();
 
-        /* least-privilege read-only access */
-        acTable.grantReadData(apiFn);
+        /* least-privilege access */
+        acSubmissionsTable.grantReadWriteData(apiFn);
+        usersTable.grantReadWriteData(apiFn);
 
         /* 3 ▶ HTTP API with Lambda integration */
         HttpApi api = HttpApi.Builder.create(this, "LeetSyncHttpApi").build();

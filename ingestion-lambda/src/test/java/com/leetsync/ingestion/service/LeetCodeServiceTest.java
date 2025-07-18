@@ -26,13 +26,11 @@ class LeetCodeServiceTest {
               "data": {
                 "recentAcSubmissionList": [
                   {
-                    "id": "1688968015",
                     "title": "Two Sum",
                     "titleSlug": "two-sum",
                     "timestamp": 1720000000
                   },
                   {
-                    "id": "1688781454",
                     "title": "Add Two Numbers",
                     "titleSlug": "add-two-numbers",
                     "timestamp": 1720000500
@@ -44,9 +42,11 @@ class LeetCodeServiceTest {
 
         List<AcSubmission> result = service.parseResponse(mockJson);
         assertEquals(2, result.size());
-        assertEquals(1688781454L, result.get(1).getId());
         assertEquals("Two Sum", result.get(0).getTitle());
-        assertEquals("add-two-numbers", result.get(1).getTitleSlug());
+        assertEquals("two-sum", result.get(0).getTitleSlug());
         assertEquals(1720000000L, result.get(0).getTimestamp());
+        assertEquals("Add Two Numbers", result.get(1).getTitle());
+        assertEquals("add-two-numbers", result.get(1).getTitleSlug());
+        assertEquals(1720000500L, result.get(1).getTimestamp());
     }
 }

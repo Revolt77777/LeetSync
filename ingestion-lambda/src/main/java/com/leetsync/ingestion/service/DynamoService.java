@@ -25,30 +25,33 @@ public class DynamoService {
     }
 
     public boolean storeIfNew(AcSubmission submission) {
-        String idStr = Long.toString(submission.getId());
-        log.info("Attempting to store submission with ID: {}", idStr);
+        String username = submission.getUsername();
+        String titleSlug = submission.getTitleSlug();
+        long timestamp = submission.getTimestamp();
+        log.info("Attempting to store submission for user: {} with titleSlug: {} and timestamp: {}", username, titleSlug, timestamp);
 
         Map<String, AttributeValue> item = new HashMap<>();
-        item.put("id", AttributeValue.fromN(idStr));
-        item.put("timestamp", AttributeValue.fromN(Long.toString(submission.getTimestamp())));
+        item.put("username", AttributeValue.fromS(username));
+        item.put("timestamp", AttributeValue.fromN(Long.toString(timestamp)));
+        item.put("titleSlug", AttributeValue.fromS(titleSlug));
         item.put("title", AttributeValue.fromS(submission.getTitle()));
-        item.put("titleSlug", AttributeValue.fromS(submission.getTitleSlug()));
 
         PutItemRequest putRequest = PutItemRequest.builder()
                 .tableName(tableName)
                 .item(item)
-                .conditionExpression("attribute_not_exists(id)")
+                .conditionExpression("attribute_not_exists(username) AND attribute_not_exists(#ts)")
+                .expressionAttributeNames(Map.of("#ts", "timestamp"))
                 .build();
 
         try {
             dynamoDbClient.putItem(putRequest);
-            log.info("Stored new submission with ID: {}", idStr);
+            log.info("Stored new submission for user: {} with titleSlug: {} and timestamp: {}", username, titleSlug, timestamp);
             return true;
         } catch (ConditionalCheckFailedException e) {
-            log.info("Submission with ID {} already exists. Skipping.", idStr);
+            log.info("Submission for user {} with titleSlug {} and timestamp {} already exists. Skipping.", username, titleSlug, timestamp);
             return false;
         } catch (DynamoDbException e) {
-            log.error("DynamoDB error while storing ID {}: {}", idStr, e.getMessage());
+            log.error("DynamoDB error while storing submission for user {} with titleSlug {} and timestamp {}: {}", username, titleSlug, timestamp, e.getMessage());
             return false;
         }
     }

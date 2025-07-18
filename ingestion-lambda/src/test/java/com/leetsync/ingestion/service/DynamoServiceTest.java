@@ -30,14 +30,14 @@ class DynamoServiceTest {
                 .thenReturn(PutItemResponse.builder().build());
 
         AcSubmission sub = new AcSubmission(
-                123L, "Two Sum", "two-sum", Instant.now().getEpochSecond());
+                "testuser", "Two Sum", "two-sum", Instant.now().getEpochSecond());
 
         assertTrue(service.storeIfNew(sub));
 
         // Verify the request actually hit DynamoDbClient
         ArgumentCaptor<PutItemRequest> cap = ArgumentCaptor.forClass(PutItemRequest.class);
         verify(mockDynamo).putItem(cap.capture());
-        assertEquals("attribute_not_exists(id)", cap.getValue().conditionExpression());
+        assertEquals("attribute_not_exists(username) AND attribute_not_exists(#ts)", cap.getValue().conditionExpression());
     }
 
     @Test
@@ -46,7 +46,7 @@ class DynamoServiceTest {
                 .thenThrow(ConditionalCheckFailedException.builder().build());
 
         AcSubmission sub = new AcSubmission(
-                123L, "Test", "test", Instant.now().getEpochSecond());
+                "testuser", "Test", "test", Instant.now().getEpochSecond());
 
         assertFalse(service.storeIfNew(sub));
         verify(mockDynamo).putItem(any(PutItemRequest.class));

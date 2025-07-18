@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 
 class ApiServiceTest {
 
@@ -24,7 +23,7 @@ class ApiServiceTest {
 
     @Test
     void getAllSubmissions_delegatesToRepo() {
-        List<AcSubmission> stub = List.of(new AcSubmission());
+        List<AcSubmission> stub = List.of(new AcSubmission("testuser", "Two Sum", "two-sum", 1720000000L));
         Mockito.when(repo.findAll()).thenReturn(stub);
 
         List<AcSubmission> result = service.getAllSubmissions();
@@ -34,14 +33,14 @@ class ApiServiceTest {
     }
 
     @Test
-    void getByProblemId_passesThrough() {
-        long pid = 42L;
-        Mockito.when(repo.findByProblemId(eq(pid)))
-                .thenReturn(List.of(new AcSubmission()));
+    void getSubmissionsByUsername_delegatesToRepo() {
+        String username = "testuser";
+        List<AcSubmission> stub = List.of(new AcSubmission(username, "Two Sum", "two-sum", 1720000000L));
+        Mockito.when(repo.findByUsername(username)).thenReturn(stub);
 
-        List<AcSubmission> result = service.getByProblemId(pid);
+        List<AcSubmission> result = service.getSubmissionsByUsername(username);
 
-        assertThat(result).hasSize(1);
-        Mockito.verify(repo).findByProblemId(pid);
+        assertThat(result).isEqualTo(stub);
+        Mockito.verify(repo).findByUsername(username);
     }
 }

@@ -6,9 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** REST endpoints for accepted-submission data. */
+/** REST endpoints for user-specific data. */
 @RestController
-@RequestMapping("/acsubmissions")
 public class ApiController {
 
     private final ApiService service;
@@ -17,13 +16,8 @@ public class ApiController {
         this.service = service;
     }
 
-    @GetMapping
-    public List<AcSubmission> all() {
-        return service.getAllSubmissions();
-    }
-
-    @GetMapping("/{problemId}")
-    public List<AcSubmission> byProblem(@PathVariable("problemId") long problemId) {
-        return service.getByProblemId(problemId);
+    @GetMapping("/{username}/acsubmissions")
+    public List<AcSubmission> getSubmissionsByUsername(@PathVariable String username) {
+        return service.getSubmissionsByUsername(username);
     }
 }

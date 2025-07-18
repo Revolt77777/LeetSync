@@ -1,22 +1,22 @@
 package com.leetsync.shared.model;
 
 public class AcSubmission {
-    private long id;
+    private String username;
     private String title;
     private String titleSlug;
     private long timestamp;
 
     public AcSubmission() {}
 
-    public AcSubmission(long id, String title, String titleSlug, long timestamp) {
-        this.id = id;
+    public AcSubmission(String username, String title, String titleSlug, long timestamp) {
+        this.username = username;
         this.title = title;
         this.titleSlug = titleSlug;
         this.timestamp = timestamp;
     }
 
-    public long getId() {
-        return id;
+    public String getUsername() {
+        return username;
     }
 
     public String getTitle() {
@@ -31,8 +31,8 @@ public class AcSubmission {
         return timestamp;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setTitle(String title) {
@@ -50,8 +50,9 @@ public class AcSubmission {
     @Override
     public String toString() {
         return "AcSubmission{" +
-                "id=" + id +
+                "username='" + username + '\'' +
                 ", title='" + title + '\'' +
+                ", titleSlug='" + titleSlug + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
     }

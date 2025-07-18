@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,26 +24,17 @@ class ApiControllerTest {
     private ApiService apiService;          // mocked, no DB needed
 
     @Test
-    void allSubmissions_returnsList() throws Exception {
+    void getSubmissionsByUsername_returnsList() throws Exception {
+        String username = "testuser";
         List<AcSubmission> stub =
-                List.of(new AcSubmission(1L, "Two Sum", "two-sum", 1_620_000_000L));
+                List.of(new AcSubmission(username, "Two Sum", "two-sum", 1_620_000_000L));
 
-        Mockito.when(apiService.getAllSubmissions()).thenReturn(stub);
+        Mockito.when(apiService.getSubmissionsByUsername(username)).thenReturn(stub);
 
-        mockMvc.perform(get("/acsubmissions"))
+        mockMvc.perform(get("/" + username + "/acsubmissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].title").value("Two Sum"));
-    }
-
-    @Test
-    void byProblemId_returnsMatchingList() throws Exception {
-        Mockito.when(apiService.getByProblemId(anyLong()))
-                .thenReturn(List.of(new AcSubmission(2L, "Add Two Numbers",
-                        "add-two-numbers", 1_620_360_000L)));
-
-        mockMvc.perform(get("/acsubmissions/123"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].titleSlug").value("add-two-numbers"));
+                .andExpect(jsonPath("$[0].title").value("Two Sum"))
+                .andExpect(jsonPath("$[0].username").value(username));
     }
 }

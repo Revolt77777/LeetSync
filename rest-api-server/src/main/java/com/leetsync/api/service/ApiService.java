@@ -19,7 +19,7 @@ public class ApiService {
         return repository.findAll();
     }
 
-    public List<AcSubmission> getByProblemId(long problemId) {
-        return repository.findByProblemId(problemId);
+    public List<AcSubmission> getSubmissionsByUsername(String username) {
+        return repository.findByUsername(username);
     }
 }
