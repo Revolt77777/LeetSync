@@ -143,9 +143,6 @@ public class ProblemDynamoService {
         if (problem.getDifficultyLevel() != null) {
             item.put("difficultyLevel", AttributeValue.fromN(problem.getDifficultyLevel().toString()));
         }
-        if (problem.getProgress() != null) {
-            item.put("progress", AttributeValue.fromN(problem.getProgress().toString()));
-        }
         if (problem.getDifficulty() != null) {
             item.put("difficulty", AttributeValue.fromS(problem.getDifficulty()));
         }
@@ -172,7 +169,6 @@ public class ProblemDynamoService {
 
         try {
             dynamoDbClient.putItem(putRequest);
-            log.debug("Stored problem with titleSlug: {}", problem.getTitleSlug());
             return true;
         } catch (DynamoDbException e) {
             log.error("DynamoDB error while storing problem {}: {}", problem.getTitleSlug(), e.getMessage());

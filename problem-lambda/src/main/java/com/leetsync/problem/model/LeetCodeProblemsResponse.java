@@ -1,4 +1,4 @@
-package com.leetsync.shared.model;
+package com.leetsync.problem.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,8 +30,6 @@ public class LeetCodeProblemsResponse {
         @JsonProperty("paid_only")
         private Boolean paidOnly;
         
-        private Double frequency;
-        
         public Stat getStat() { return stat; }
         public void setStat(Stat stat) { this.stat = stat; }
         
@@ -40,9 +38,6 @@ public class LeetCodeProblemsResponse {
         
         public Boolean getPaidOnly() { return paidOnly; }
         public void setPaidOnly(Boolean paidOnly) { this.paidOnly = paidOnly; }
-        
-        public Double getFrequency() { return frequency; }
-        public void setFrequency(Double frequency) { this.frequency = frequency; }
     }
     
     @JsonIgnoreProperties(ignoreUnknown = true)

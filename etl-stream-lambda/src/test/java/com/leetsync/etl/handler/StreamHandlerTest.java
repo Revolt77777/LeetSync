@@ -68,6 +68,8 @@ class StreamHandlerTest {
         assertEquals("Two Sum", item.get("title").getS());
         assertEquals("two-sum", item.get("titleSlug").getS());
         assertEquals("1640995200", item.get("timestamp").getN());
+        assertEquals("12", item.get("runtimeMs").getN());
+        assertEquals("19.1", item.get("memoryMb").getN());
     }
 
     @Test
@@ -123,6 +125,14 @@ class StreamHandlerTest {
         AttributeValue timestamp = new AttributeValue();
         timestamp.setN("1640995200");
         item.put("timestamp", timestamp);
+        
+        AttributeValue runtimeMs = new AttributeValue();
+        runtimeMs.setN("12");
+        item.put("runtimeMs", runtimeMs);
+        
+        AttributeValue memoryMb = new AttributeValue();
+        memoryMb.setN("19.1");
+        item.put("memoryMb", memoryMb);
         
         return item;
     }

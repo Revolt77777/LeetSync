@@ -35,6 +35,8 @@ public class DynamoService {
         item.put("timestamp", AttributeValue.fromN(Long.toString(timestamp)));
         item.put("titleSlug", AttributeValue.fromS(titleSlug));
         item.put("title", AttributeValue.fromS(submission.getTitle()));
+        item.put("runtimeMs", AttributeValue.fromN(Integer.toString(submission.getRuntimeMs())));
+        item.put("memoryMb", AttributeValue.fromN(Double.toString(submission.getMemoryMb())));
 
         PutItemRequest putRequest = PutItemRequest.builder()
                 .tableName(tableName)

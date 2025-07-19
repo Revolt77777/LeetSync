@@ -1,31 +1,13 @@
 package com.leetsync.shared.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Problem {
     
-    @JsonProperty("question_id")
     private Long questionId;
-    
-    @JsonProperty("frontend_question_id") 
     private Integer frontendQuestionId;
-    
-    @JsonProperty("question__title_slug")
     private String titleSlug;
-    
-    @JsonProperty("total_acs")
     private Long totalAccepted;
-    
-    @JsonProperty("total_submitted")
     private Long totalSubmitted;
-    
-    @JsonProperty("difficulty")
     private Integer difficultyLevel;
-    
-    @JsonProperty("frequency")
-    private Double progress;
     
     private String difficulty;
     private Double acRate;
@@ -51,26 +33,25 @@ public class Problem {
     public Problem() {}
     
     public Problem(Long questionId, Integer frontendQuestionId, String titleSlug, 
-                   Long totalAccepted, Long totalSubmitted, Integer difficultyLevel, Double progress) {
+                   Long totalAccepted, Long totalSubmitted, Integer difficultyLevel) {
         this.questionId = questionId;
         this.frontendQuestionId = frontendQuestionId;
         this.titleSlug = titleSlug;
         this.totalAccepted = totalAccepted;
         this.totalSubmitted = totalSubmitted;
         this.difficultyLevel = difficultyLevel;
-        this.progress = progress;
         this.difficulty = mapDifficultyToString(difficultyLevel);
         this.acRate = calculateAcRate(totalAccepted, totalSubmitted);
     }
     
     private String mapDifficultyToString(Integer level) {
         if (level == null) return null;
-        switch (level) {
-            case 1: return "Easy";
-            case 2: return "Medium";
-            case 3: return "Hard";
-            default: return "Unknown";
-        }
+        return switch (level) {
+            case 1 -> "Easy";
+            case 2 -> "Medium";
+            case 3 -> "Hard";
+            default -> "Unknown";
+        };
     }
     
     private Double calculateAcRate(Long accepted, Long submitted) {
@@ -105,10 +86,7 @@ public class Problem {
         this.difficultyLevel = difficultyLevel;
         this.difficulty = mapDifficultyToString(difficultyLevel);
     }
-    
-    public Double getProgress() { return progress; }
-    public void setProgress(Double progress) { this.progress = progress; }
-    
+
     public String getDifficulty() { return difficulty; }
     public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     

@@ -1,7 +1,6 @@
 package com.leetsync.infrastructure;
 
 import software.amazon.awscdk.App;
-import software.amazon.awscdk.StackProps;
 
 public class InfrastructureApp {
     public static void main(final String[] args) {
@@ -14,6 +13,7 @@ public class InfrastructureApp {
         new LeetSyncApiStack(app, "LeetSyncApiStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable());
         new LeetSyncIngestionStack(app, "LeetSyncIngestionStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable());
         new LeetSyncProblemStack(app, "LeetSyncProblemStack", dataStack.getProblemsTable());
+        new LeetSyncEtlStack(app, "LeetSyncEtlStack", dataStack.getAcSubmissionsTable(), dataStack.getProblemsTable(), dataStack.getParquetBucket());
 
         app.synth();
     }

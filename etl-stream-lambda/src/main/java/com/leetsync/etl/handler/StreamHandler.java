@@ -29,6 +29,10 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
     private final S3Service s3Service;
 
     public StreamHandler() {
+        // Suppress Hadoop native library warning
+        System.setProperty("hadoop.home.dir", "/tmp");
+        System.setProperty("java.library.path", "/tmp");
+        
         DynamoDbClient dynamoClient = DynamoDbClient.create();
         DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamoClient)
@@ -101,8 +105,10 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
             String title = item.get("title").getS();
             String titleSlug = item.get("titleSlug").getS();
             long timestamp = Long.parseLong(item.get("timestamp").getN());
-            
-            return new AcSubmission(username, title, titleSlug, timestamp);
+            int runtimeMs = Integer.parseInt(item.get("runtimeMs").getN());
+            double memoryMb = Double.parseDouble(item.get("memoryMb").getN());
+
+            return new AcSubmission(username, title, titleSlug, timestamp, runtimeMs, memoryMb);
             
         } catch (Exception e) {
             log.error("Error parsing AcSubmission: {}", e.getMessage());
@@ -118,10 +124,12 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
         record.setTitle(submission.getTitle());
         record.setTitleSlug(submission.getTitleSlug());
         record.setTimestamp(submission.getTimestamp());
+        record.setRuntimeMs(submission.getRuntimeMs());
+        record.setMemoryMb(submission.getMemoryMb());
         
         // Enrich with problem data (if available)
         if (problem != null) {
-            record.setDifficulty(problem.getDifficulty());
+            record.setDifficultyLevel(problem.getDifficultyLevel());
             record.setAcRate(problem.getAcRate());
             record.setTotalAccepted(problem.getTotalAccepted());
             record.setTotalSubmitted(problem.getTotalSubmitted());

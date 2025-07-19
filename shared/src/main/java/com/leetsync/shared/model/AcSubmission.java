@@ -5,14 +5,18 @@ public class AcSubmission {
     private String title;
     private String titleSlug;
     private long timestamp;
+    private Integer runtimeMs;  // Runtime in milliseconds
+    private Double memoryMb;    // Memory in megabytes
 
     public AcSubmission() {}
 
-    public AcSubmission(String username, String title, String titleSlug, long timestamp) {
+    public AcSubmission(String username, String title, String titleSlug, long timestamp, Integer runtimeMs, Double memoryMb) {
         this.username = username;
         this.title = title;
         this.titleSlug = titleSlug;
         this.timestamp = timestamp;
+        this.runtimeMs = runtimeMs;
+        this.memoryMb = memoryMb;
     }
 
     public String getUsername() {
@@ -47,6 +51,22 @@ public class AcSubmission {
         this.timestamp = timestamp;
     }
 
+    public Integer getRuntimeMs() {
+        return runtimeMs;
+    }
+
+    public void setRuntimeMs(Integer runtimeMs) {
+        this.runtimeMs = runtimeMs;
+    }
+
+    public Double getMemoryMb() {
+        return memoryMb;
+    }
+
+    public void setMemoryMb(Double memoryMb) {
+        this.memoryMb = memoryMb;
+    }
+
     @Override
     public String toString() {
         return "AcSubmission{" +
@@ -54,6 +74,8 @@ public class AcSubmission {
                 ", title='" + title + '\'' +
                 ", titleSlug='" + titleSlug + '\'' +
                 ", timestamp=" + timestamp +
+                ", runtimeMs=" + runtimeMs +
+                ", memoryMb=" + memoryMb +
                 '}';
     }
 }

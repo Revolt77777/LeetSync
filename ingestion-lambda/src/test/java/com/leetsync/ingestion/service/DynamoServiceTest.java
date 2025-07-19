@@ -30,7 +30,7 @@ class DynamoServiceTest {
                 .thenReturn(PutItemResponse.builder().build());
 
         AcSubmission sub = new AcSubmission(
-                "testuser", "Two Sum", "two-sum", Instant.now().getEpochSecond());
+                "testuser", "Two Sum", "two-sum", Instant.now().getEpochSecond(), 12, 19.1);
 
         assertTrue(service.storeIfNew(sub));
 
@@ -46,7 +46,7 @@ class DynamoServiceTest {
                 .thenThrow(ConditionalCheckFailedException.builder().build());
 
         AcSubmission sub = new AcSubmission(
-                "testuser", "Test", "test", Instant.now().getEpochSecond());
+                "testuser", "Test", "test", Instant.now().getEpochSecond(), 5, 20.5);
 
         assertFalse(service.storeIfNew(sub));
         verify(mockDynamo).putItem(any(PutItemRequest.class));

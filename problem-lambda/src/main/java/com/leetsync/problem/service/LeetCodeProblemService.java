@@ -1,7 +1,7 @@
 package com.leetsync.problem.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.leetsync.shared.model.LeetCodeProblemsResponse;
+import com.leetsync.problem.model.LeetCodeProblemsResponse;
 import com.leetsync.shared.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +65,7 @@ public class LeetCodeProblemService {
                     stat.getQuestionTitleSlug(),
                     stat.getTotalAcs(),
                     stat.getTotalSubmitted(),
-                    pair.getDifficulty() != null ? pair.getDifficulty().getLevel() : null,
-                    pair.getFrequency()
+                    pair.getDifficulty() != null ? pair.getDifficulty().getLevel() : null
             );
             
             problems.add(problem);

@@ -23,7 +23,7 @@ public class LeetCodeService {
             {
               "query": "query recentAcSubmissions($username: String!, $limit: Int!) { \
                          recentAcSubmissionList(username: $username, limit: $limit) { \
-                           title titleSlug timestamp } }",
+                           title titleSlug timestamp runtime memory } }",
               "variables": {
                 "username": "%s",
                 "limit": %d
@@ -49,10 +49,57 @@ public class LeetCodeService {
         try {
             var root = mapper.readTree(response);
             var listNode = root.path("data").path("recentAcSubmissionList");
-            return mapper.readerForListOf(AcSubmission.class).readValue(listNode);
+            
+            // Parse each submission manually to handle runtime/memory parsing
+            List<AcSubmission> submissions = new java.util.ArrayList<>();
+            
+            for (var node : listNode) {
+                AcSubmission submission = new AcSubmission();
+                submission.setTitle(node.path("title").asText());
+                submission.setTitleSlug(node.path("titleSlug").asText());
+                submission.setTimestamp(node.path("timestamp").asLong());
+                
+                // Parse runtime: "0 ms" -> 0
+                String runtimeStr = node.path("runtime").asText();
+                submission.setRuntimeMs(parseRuntime(runtimeStr));
+                
+                // Parse memory: "19.1 MB" -> 19.1
+                String memoryStr = node.path("memory").asText();
+                submission.setMemoryMb(parseMemory(memoryStr));
+                
+                submissions.add(submission);
+            }
+            
+            return submissions;
         } catch (IOException e) {
             e.printStackTrace();
             return List.of();
+        }
+    }
+    
+    private Integer parseRuntime(String runtimeStr) {
+        if (runtimeStr == null || runtimeStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            // Extract number from "0 ms" or similar format
+            String numStr = runtimeStr.replaceAll("[^0-9]", "");
+            return numStr.isEmpty() ? null : Integer.parseInt(numStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+    
+    private Double parseMemory(String memoryStr) {
+        if (memoryStr == null || memoryStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            // Extract number from "19.1 MB" or similar format
+            String numStr = memoryStr.replaceAll("[^0-9.]", "");
+            return numStr.isEmpty() ? null : Double.parseDouble(numStr);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 }

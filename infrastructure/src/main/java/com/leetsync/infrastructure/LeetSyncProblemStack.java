@@ -25,6 +25,7 @@ public class LeetSyncProblemStack extends Stack {
 
         // Problem Scan Lambda Function
         Function problemScanFn = Function.Builder.create(this, "ProblemScanFunction")
+                .functionName("leetsync-problem-lambda")
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.problem.handler.ProblemScanHandler")
                 .memorySize(512)

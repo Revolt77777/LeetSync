@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +33,9 @@ public class ParquetFileWriter {
                 {"name": "title", "type": "string"},
                 {"name": "titleSlug", "type": "string"},
                 {"name": "timestamp", "type": "long"},
-                {"name": "difficulty", "type": ["null", "string"], "default": null},
+                {"name": "runtimeMs", "type": ["null", "int"], "default": null},
+                {"name": "memoryMb", "type": ["null", "double"], "default": null},
+                {"name": "difficultyLevel", "type": ["null", "int"], "default": null},
                 {"name": "tags", "type": ["null", {"type": "array", "items": "string"}], "default": null},
                 {"name": "acRate", "type": ["null", "double"], "default": null},
                 {"name": "totalAccepted", "type": ["null", "long"], "default": null},
@@ -46,8 +50,11 @@ public class ParquetFileWriter {
             return null;
         }
 
-        // Generate temp file path with date partitioning structure
-        LocalDate date = LocalDate.ofEpochDay(records.getFirst().getTimestamp() / 86400);
+        // Generate temp file path with date partitioning structure using Seattle timezone
+        ZoneId seattleZone = ZoneId.of("America/Los_Angeles");
+        LocalDate date = Instant.ofEpochSecond(records.getFirst().getTimestamp())
+                .atZone(seattleZone)
+                .toLocalDate();
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         String fileName = String.format("/tmp/acsubmissions/%s/part-%s.parquet", dateStr, UUID.randomUUID());
         
@@ -83,7 +90,9 @@ public class ParquetFileWriter {
         avroRecord.put("title", record.getTitle());
         avroRecord.put("titleSlug", record.getTitleSlug());
         avroRecord.put("timestamp", record.getTimestamp());
-        avroRecord.put("difficulty", record.getDifficulty());
+        avroRecord.put("runtimeMs", record.getRuntimeMs());
+        avroRecord.put("memoryMb", record.getMemoryMb());
+        avroRecord.put("difficultyLevel", record.getDifficultyLevel());
         avroRecord.put("tags", record.getTags());
         avroRecord.put("acRate", record.getAcRate());
         avroRecord.put("totalAccepted", record.getTotalAccepted());

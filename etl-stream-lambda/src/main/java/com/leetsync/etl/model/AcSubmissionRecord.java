@@ -9,9 +9,11 @@ public class AcSubmissionRecord {
     private String title;
     private String titleSlug;
     private Long timestamp;
+    private Integer runtimeMs;
+    private Double memoryMb;
     
     // From Problem (enrichment)
-    private String difficulty;        // Easy/Medium/Hard
+    private Integer difficultyLevel;
     private String[] tags;           // TopicTag names as array
     private Double acRate;
     private Long totalAccepted;
@@ -32,8 +34,8 @@ public class AcSubmissionRecord {
     public Long getTimestamp() { return timestamp; }
     public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
 
-    public String getDifficulty() { return difficulty; }
-    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
+    public Integer getDifficultyLevel() { return difficultyLevel; }
+    public void setDifficultyLevel(Integer difficultyLevel) { this.difficultyLevel = difficultyLevel; }
 
     public String[] getTags() { return tags; }
     public void setTags(String[] tags) { this.tags = tags; }
@@ -46,4 +48,10 @@ public class AcSubmissionRecord {
 
     public Long getTotalSubmitted() { return totalSubmitted; }
     public void setTotalSubmitted(Long totalSubmitted) { this.totalSubmitted = totalSubmitted; }
+
+    public Integer getRuntimeMs() { return runtimeMs; }
+    public void setRuntimeMs(Integer runtimeMs) { this.runtimeMs = runtimeMs; }
+
+    public Double getMemoryMb() { return memoryMb; }
+    public void setMemoryMb(Double memoryMb) { this.memoryMb = memoryMb; }
 }

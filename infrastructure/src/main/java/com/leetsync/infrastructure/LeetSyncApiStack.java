@@ -23,6 +23,7 @@ public class LeetSyncApiStack extends Stack {
 
         /* 2 ▶ Lambda packaging: Spring Boot JAR asset */
         Function apiFn = Function.Builder.create(this, "RestApiFunction")
+                .functionName("leetsync-api-server")
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.api.StreamLambdaHandler")
                 .memorySize(1024)

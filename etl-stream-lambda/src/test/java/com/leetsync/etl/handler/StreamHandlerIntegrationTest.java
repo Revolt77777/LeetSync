@@ -88,7 +88,7 @@ class StreamHandlerIntegrationTest {
         assertEquals("Two Sum", record.getTitle());
         assertEquals("two-sum", record.getTitleSlug());
         assertEquals(1640995200L, record.getTimestamp());
-        assertEquals("Easy", record.getDifficulty());
+        assertEquals(1, record.getDifficultyLevel());
         assertEquals(52.404474503651024, record.getAcRate(), 0.001);
         assertArrayEquals(new String[]{"Array", "Hash Table"}, record.getTags());
         
@@ -149,7 +149,7 @@ class StreamHandlerIntegrationTest {
         verify(parquetFileWriter).writeToTempFile(recordsCaptor.capture());
         
         AcSubmissionRecord record = recordsCaptor.getValue().get(0);
-        assertNull(record.getDifficulty());
+        assertNull(record.getDifficultyLevel());
         assertNull(record.getTags());
         assertNull(record.getAcRate());
     }
@@ -273,7 +273,7 @@ class StreamHandlerIntegrationTest {
                     record.setTimestamp(timestamp);
                     
                     if (problem != null) {
-                        record.setDifficulty(problem.getDifficulty());
+                        record.setDifficultyLevel(problem.getDifficultyLevel());
                         record.setAcRate(problem.getAcRate());
                         record.setTotalAccepted(problem.getTotalAccepted());
                         record.setTotalSubmitted(problem.getTotalSubmitted());

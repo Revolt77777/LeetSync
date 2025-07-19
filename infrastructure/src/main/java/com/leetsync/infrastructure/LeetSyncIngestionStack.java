@@ -25,6 +25,7 @@ public class LeetSyncIngestionStack extends Stack {
 
         // Ingestion Lambda Function
         Function ingestionFn = Function.Builder.create(this, "IngestionFunction")
+                .functionName("leetsync-ingestion-lambda")
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.ingestion.handler.SyncHandler")
                 .memorySize(256)

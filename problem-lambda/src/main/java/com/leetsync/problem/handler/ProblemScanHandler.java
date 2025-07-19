@@ -31,8 +31,8 @@ public class ProblemScanHandler implements RequestHandler<Void, String> {
             // 1. Fetch all problems from LeetCode
             List<Problem> allProblems = leetCodeProblemService.fetchAllProblems();
             context.getLogger().log("Fetched " + allProblems.size() + " problems from LeetCode");
-            
-            // 2. Batch check existing problems in DynamoDB
+
+            // 2. Batch check existing problems in DynamoDB (for logging only)
             Set<String> existingTitleSlugs = problemDynamoService.getExistingTitleSlugs(
                 allProblems.stream().map(Problem::getTitleSlug).collect(Collectors.toSet())
             );
@@ -41,28 +41,24 @@ public class ProblemScanHandler implements RequestHandler<Void, String> {
             // 3. Filter to only NEW problems
             List<Problem> newProblems = allProblems.stream()
                 .filter(p -> !existingTitleSlugs.contains(p.getTitleSlug()))
-                .collect(Collectors.toList());
-            context.getLogger().log("Identified " + newProblems.size() + " new problems");
-            
-            // 4. For each new problem, fetch topicTags and store
+                .toList();
+            context.getLogger().log("Processing " + newProblems.size() + " new problems");
+
             int storedCount = 0;
             for (Problem problem : newProblems) {
                 try {
-                    // Fetch topicTags for this problem
                     List<Problem.TopicTag> topicTags = leetCodeProblemService.fetchTopicTags(problem.getTitleSlug());
                     problem.setTopicTags(topicTags);
-                    
-                    // Store the problem
+
                     problemDynamoService.storeProblem(problem);
                     storedCount++;
                     
-                    context.getLogger().log("Stored problem: " + problem.getTitleSlug() + " with " + topicTags.size() + " topic tags");
                 } catch (Exception e) {
                     context.getLogger().log("Failed to process problem " + problem.getTitleSlug() + ": " + e.getMessage());
                 }
             }
             
-            String result = String.format("Problem scan completed. Total: %d, Existing: %d, New: %d, Stored: %d", 
+            String result = String.format("Problem scan completed. Total: %d, Existing: %d, Processed: %d, Stored: %d", 
                     allProblems.size(), existingTitleSlugs.size(), newProblems.size(), storedCount);
             
             context.getLogger().log(result);

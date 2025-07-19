@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
@@ -35,15 +36,25 @@ public class ProblemService {
                     .addAttribute(Integer.class, a -> a.name("difficultyLevel")
                             .getter(Problem::getDifficultyLevel)
                             .setter(Problem::setDifficultyLevel))
-                    .addAttribute(Double.class, a -> a.name("progress")
-                            .getter(Problem::getProgress)
-                            .setter(Problem::setProgress))
                     .addAttribute(String.class, a -> a.name("difficulty")
                             .getter(Problem::getDifficulty)
                             .setter(Problem::setDifficulty))
                     .addAttribute(Double.class, a -> a.name("acRate")
                             .getter(Problem::getAcRate)
                             .setter(Problem::setAcRate))
+                    .addAttribute(EnhancedType.listOf(
+                            EnhancedType.documentOf(Problem.TopicTag.class, 
+                                TableSchema.builder(Problem.TopicTag.class)
+                                    .newItemSupplier(Problem.TopicTag::new)
+                                    .addAttribute(String.class, a -> a.name("name")
+                                            .getter(Problem.TopicTag::getName)
+                                            .setter(Problem.TopicTag::setName))
+                                    .addAttribute(String.class, a -> a.name("slug")
+                                            .getter(Problem.TopicTag::getSlug)
+                                            .setter(Problem.TopicTag::setSlug))
+                                    .build())), a -> a.name("topicTags")
+                            .getter(Problem::getTopicTags)
+                            .setter(Problem::setTopicTags))
                     .build();
     
     private final DynamoDbTable<Problem> problemTable;

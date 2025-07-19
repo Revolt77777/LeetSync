@@ -1,5 +1,6 @@
 package com.leetsync.infrastructure;
 
+import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.dynamodb.Attribute;
@@ -8,13 +9,21 @@ import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.GlobalSecondaryIndexProps;
 import software.amazon.awscdk.services.dynamodb.StreamViewType;
 import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.s3.BlockPublicAccess;
+import software.amazon.awscdk.services.s3.Bucket;
+import software.amazon.awscdk.services.s3.LifecycleRule;
+import software.amazon.awscdk.services.s3.StorageClass;
+import software.amazon.awscdk.services.s3.Transition;
 import software.constructs.Construct;
+
+import java.util.List;
 
 public class LeetSyncDataStack extends Stack {
 
     private final Table acSubmissionsTable;
     private final Table problemsTable;
     private final Table usersTable;
+    private final Bucket parquetBucket;
 
     public LeetSyncDataStack(final Construct scope, final String id) {
         this(scope, id, null);
@@ -59,6 +68,7 @@ public class LeetSyncDataStack extends Stack {
                         .type(AttributeType.STRING)
                         .build())
                 .billingMode(BillingMode.PAY_PER_REQUEST)
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
                 .build();
 
         // Users Table - User management
@@ -69,6 +79,26 @@ public class LeetSyncDataStack extends Stack {
                         .type(AttributeType.STRING)
                         .build())
                 .billingMode(BillingMode.PAY_PER_REQUEST)
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
+                .build();
+
+        // S3 bucket for Parquet files
+        this.parquetBucket = Bucket.Builder.create(this, "ParquetBucket")
+                .bucketName("leetsync-parquet")
+                .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
+                .lifecycleRules(List.of(
+                    LifecycleRule.builder()
+                        .id("GlacierTransition")
+                        .enabled(true)
+                        .transitions(List.of(
+                            Transition.builder()
+                                .storageClass(StorageClass.GLACIER)
+                                .transitionAfter(Duration.days(90))
+                                .build()
+                        ))
+                        .build()
+                ))
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
                 .build();
     }
 
@@ -82,5 +112,9 @@ public class LeetSyncDataStack extends Stack {
     
     public Table getUsersTable() {
         return usersTable;
+    }
+    
+    public Bucket getParquetBucket() {
+        return parquetBucket;
     }
 }
