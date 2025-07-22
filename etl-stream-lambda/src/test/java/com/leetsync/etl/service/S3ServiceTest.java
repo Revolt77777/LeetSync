@@ -50,7 +50,7 @@ class S3ServiceTest {
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
             .thenReturn(PutObjectResponse.builder().build());
         
-        long timestamp = 1640995200L; // 2022-01-01
+        long timestamp = 1640995200L; // 2022-01-01 00:00:00 UTC = 2021-12-31 16:00:00 PST
         
         s3Service.uploadParquetFile(testFile.toString(), timestamp);
         
@@ -62,7 +62,7 @@ class S3ServiceTest {
         
         PutObjectRequest request = requestCaptor.getValue();
         assertEquals(BUCKET_NAME, request.bucket());
-        assertTrue(request.key().startsWith("acsubmissions/2022/01/01/part-"));
+        assertTrue(request.key().startsWith("acsubmissions/year=2021/month=12/day=31/part-"));
         assertTrue(request.key().endsWith(".parquet"));
         assertEquals("application/octet-stream", request.contentType());
         
@@ -79,8 +79,8 @@ class S3ServiceTest {
             .thenReturn(PutObjectResponse.builder().build());
         
         // Test different timestamps create different date partitions
-        long timestamp1 = 1640995200L; // 2022-01-01
-        long timestamp2 = 1672531200L; // 2023-01-01
+        long timestamp1 = 1640995200L; // 2022-01-01 UTC = 2021-12-31 PST
+        long timestamp2 = 1672531200L; // 2023-01-01 UTC = 2022-12-31 PST
         
         s3Service.uploadParquetFile(testFile.toString(), timestamp1);
         
@@ -94,8 +94,8 @@ class S3ServiceTest {
         String key1 = requestCaptor.getAllValues().get(0).key();
         String key2 = requestCaptor.getAllValues().get(1).key();
         
-        assertTrue(key1.contains("2022/01/01"));
-        assertTrue(key2.contains("2023/01/01"));
+        assertTrue(key1.contains("year=2021/month=12/day=31"));
+        assertTrue(key2.contains("year=2022/month=12/day=31"));
         assertNotEquals(key1, key2);
     }
 
@@ -145,8 +145,8 @@ class S3ServiceTest {
         
         String s3Key = requestCaptor.getValue().key();
         
-        // Verify key format: acsubmissions/YYYY/MM/DD/part-<UUID>.parquet
-        assertTrue(s3Key.matches("acsubmissions/\\d{4}/\\d{2}/\\d{2}/part-[0-9a-f-]{36}\\.parquet"));
+        // Verify key format: acsubmissions/year=YYYY/month=MM/day=DD/part-<UUID>.parquet
+        assertTrue(s3Key.matches("acsubmissions/year=\\d{4}/month=\\d{2}/day=\\d{2}/part-[0-9a-f-]{36}\\.parquet"));
     }
 
     @Test

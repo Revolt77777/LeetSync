@@ -14,6 +14,7 @@ public class InfrastructureApp {
         new LeetSyncIngestionStack(app, "LeetSyncIngestionStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable());
         new LeetSyncProblemStack(app, "LeetSyncProblemStack", dataStack.getProblemsTable());
         new LeetSyncEtlStack(app, "LeetSyncEtlStack", dataStack.getAcSubmissionsTable(), dataStack.getProblemsTable(), dataStack.getParquetBucket());
+        new LeetSyncAnalyticsStack(app, "LeetSyncAnalyticsStack", dataStack.getParquetBucket(), dataStack.getAthenaResultsBucket(), dataStack.getUserStatsCacheTable());
 
         app.synth();
     }

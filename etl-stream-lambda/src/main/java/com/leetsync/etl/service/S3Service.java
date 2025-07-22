@@ -9,7 +9,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -26,10 +28,14 @@ public class S3Service {
     }
 
     public void uploadParquetFile(String localFilePath, long timestampFromFirstRecord) throws IOException {
-        // Generate S3 key with date partitioning
-        LocalDate date = LocalDate.ofEpochDay(timestampFromFirstRecord / 86400);
-        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-        String s3Key = String.format("acsubmissions/%s/part-%s.parquet", dateStr, UUID.randomUUID());
+        // Generate S3 key with date partitioning using Seattle timezone (same as ParquetFileWriter)
+        ZoneId seattleZone = ZoneId.of("America/Los_Angeles");
+        LocalDate date = Instant.ofEpochSecond(timestampFromFirstRecord)
+                .atZone(seattleZone)
+                .toLocalDate();
+        String hivePartitionPath = String.format("year=%d/month=%02d/day=%02d", 
+            date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+        String s3Key = String.format("acsubmissions/%s/part-%s.parquet", hivePartitionPath, UUID.randomUUID());
         
         byte[] fileContent = Files.readAllBytes(Paths.get(localFilePath));
         

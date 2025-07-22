@@ -69,4 +69,5 @@ public class SyncHandler implements RequestHandler<Void, String> {
 
         return "Synced " + usernames.size() + " users with " + totalNewSubmissions + " total new submissions";
     }
+
 }

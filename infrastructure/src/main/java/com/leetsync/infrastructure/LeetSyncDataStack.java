@@ -23,7 +23,9 @@ public class LeetSyncDataStack extends Stack {
     private final Table acSubmissionsTable;
     private final Table problemsTable;
     private final Table usersTable;
+    private final Table userStatsCacheTable;
     private final Bucket parquetBucket;
+    private final Bucket athenaResultsBucket;
 
     public LeetSyncDataStack(final Construct scope, final String id) {
         this(scope, id, null);
@@ -82,6 +84,22 @@ public class LeetSyncDataStack extends Stack {
                 .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
                 .build();
 
+        // UserStatsCache Table - Calculated user statistics with TTL
+        this.userStatsCacheTable = Table.Builder.create(this, "UserStatsCacheTable")
+                .tableName("UserStatsCache")
+                .partitionKey(Attribute.builder()
+                        .name("username")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("statType")
+                        .type(AttributeType.STRING)
+                        .build())
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .timeToLiveAttribute("ttl")
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
+                .build();
+
         // S3 bucket for Parquet files
         this.parquetBucket = Bucket.Builder.create(this, "ParquetBucket")
                 .bucketName("leetsync-parquet")
@@ -100,6 +118,20 @@ public class LeetSyncDataStack extends Stack {
                 ))
                 .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
                 .build();
+
+        // S3 bucket for Athena query results
+        this.athenaResultsBucket = Bucket.Builder.create(this, "AthenaResultsBucket")
+                .bucketName("leetsync-athena-results")
+                .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
+                .lifecycleRules(List.of(
+                    LifecycleRule.builder()
+                        .id("DeleteOldResults")
+                        .enabled(true)
+                        .expiration(Duration.days(7))
+                        .build()
+                ))
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
+                .build();
     }
 
     public Table getAcSubmissionsTable() {
@@ -114,7 +146,15 @@ public class LeetSyncDataStack extends Stack {
         return usersTable;
     }
     
+    public Table getUserStatsCacheTable() {
+        return userStatsCacheTable;
+    }
+    
     public Bucket getParquetBucket() {
         return parquetBucket;
+    }
+    
+    public Bucket getAthenaResultsBucket() {
+        return athenaResultsBucket;
     }
 }

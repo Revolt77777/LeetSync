@@ -1,18 +1,19 @@
 package com.leetsync.etl.service;
 
+import blue.strategic.parquet.Dehydrator;
+import blue.strategic.parquet.ParquetWriter;
 import com.leetsync.etl.model.AcSubmissionRecord;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.parquet.avro.AvroParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.parquet.hadoop.util.HadoopOutputFile;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -24,25 +25,50 @@ public class ParquetFileWriter {
     
     private static final Logger log = LoggerFactory.getLogger(ParquetFileWriter.class);
     
-    private static final Schema SCHEMA = new Schema.Parser().parse("""
-        {
-            "type": "record",
-            "name": "AcSubmissionRecord",
-            "fields": [
-                {"name": "username", "type": "string"},
-                {"name": "title", "type": "string"},
-                {"name": "titleSlug", "type": "string"},
-                {"name": "timestamp", "type": "long"},
-                {"name": "runtimeMs", "type": ["null", "int"], "default": null},
-                {"name": "memoryMb", "type": ["null", "double"], "default": null},
-                {"name": "difficultyLevel", "type": ["null", "int"], "default": null},
-                {"name": "tags", "type": ["null", {"type": "array", "items": "string"}], "default": null},
-                {"name": "acRate", "type": ["null", "double"], "default": null},
-                {"name": "totalAccepted", "type": ["null", "long"], "default": null},
-                {"name": "totalSubmitted", "type": ["null", "long"], "default": null}
-            ]
+    // Define Parquet schema for AcSubmissionRecord
+    private static final MessageType SCHEMA = Types.buildMessage()
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType()).named("username")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType()).named("title")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType()).named("titleSlug")
+            .required(PrimitiveType.PrimitiveTypeName.INT64).named("timestamp")
+            .optional(PrimitiveType.PrimitiveTypeName.INT32).named("runtimeMs")
+            .optional(PrimitiveType.PrimitiveTypeName.DOUBLE).named("memoryMb")
+            .optional(PrimitiveType.PrimitiveTypeName.INT32).named("difficultyLevel")
+            .optional(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType()).named("tags")
+            .optional(PrimitiveType.PrimitiveTypeName.DOUBLE).named("acRate")
+            .optional(PrimitiveType.PrimitiveTypeName.INT64).named("totalAccepted")
+            .optional(PrimitiveType.PrimitiveTypeName.INT64).named("totalSubmitted")
+            .named("AcSubmissionRecord");
+    
+    // Dehydrator to convert AcSubmissionRecord to Parquet fields
+    private static final Dehydrator<AcSubmissionRecord> DEHYDRATOR = (record, valueWriter) -> {
+        valueWriter.write("username", record.getUsername());
+        valueWriter.write("title", record.getTitle());
+        valueWriter.write("titleSlug", record.getTitleSlug());
+        valueWriter.write("timestamp", record.getTimestamp());
+        
+        if (record.getRuntimeMs() != null) {
+            valueWriter.write("runtimeMs", record.getRuntimeMs());
         }
-        """);
+        if (record.getMemoryMb() != null) {
+            valueWriter.write("memoryMb", record.getMemoryMb());
+        }
+        if (record.getDifficultyLevel() != null) {
+            valueWriter.write("difficultyLevel", record.getDifficultyLevel());
+        }
+        if (record.getTags() != null && record.getTags().length > 0) {
+            valueWriter.write("tags", String.join(",", record.getTags()));
+        }
+        if (record.getAcRate() != null) {
+            valueWriter.write("acRate", record.getAcRate());
+        }
+        if (record.getTotalAccepted() != null) {
+            valueWriter.write("totalAccepted", record.getTotalAccepted());
+        }
+        if (record.getTotalSubmitted() != null) {
+            valueWriter.write("totalSubmitted", record.getTotalSubmitted());
+        }
+    };
 
     public String writeToTempFile(List<AcSubmissionRecord> records) throws IOException {
         if (records.isEmpty()) {
@@ -55,49 +81,26 @@ public class ParquetFileWriter {
         LocalDate date = Instant.ofEpochSecond(records.getFirst().getTimestamp())
                 .atZone(seattleZone)
                 .toLocalDate();
-        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-        String fileName = String.format("/tmp/acsubmissions/%s/part-%s.parquet", dateStr, UUID.randomUUID());
+        String hivePartitionPath = String.format("year=%d/month=%02d/day=%02d", 
+            date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+        String fileName = String.format("/tmp/acsubmissions/%s/part-%s.parquet", hivePartitionPath, UUID.randomUUID());
         
         // Ensure directory exists
-        java.nio.file.Path parentDir = java.nio.file.Paths.get(fileName).getParent();
+        java.nio.file.Path parentDir = Paths.get(fileName).getParent();
         if (parentDir != null) {
-            java.nio.file.Files.createDirectories(parentDir);
+            Files.createDirectories(parentDir);
         }
 
-        Path path = new Path(fileName);
-        Configuration conf = new Configuration();
+        File outputFile = new File(fileName);
         
-        try (org.apache.parquet.hadoop.ParquetWriter<GenericRecord> writer = 
-                AvroParquetWriter.<GenericRecord>builder(HadoopOutputFile.fromPath(path, conf))
-                    .withSchema(SCHEMA)
-                    .withCompressionCodec(CompressionCodecName.SNAPPY)
-                    .build()) {
-            
+        // Write using parquet-floor API
+        try (ParquetWriter<AcSubmissionRecord> writer = ParquetWriter.writeFile(SCHEMA, outputFile, DEHYDRATOR)) {
             for (AcSubmissionRecord record : records) {
-                GenericRecord avroRecord = convertToAvroRecord(record);
-                writer.write(avroRecord);
+                writer.write(record);
             }
-            
-            log.info("Wrote {} records to {}", records.size(), fileName);
-            return fileName;
         }
-    }
-    
-    private GenericRecord convertToAvroRecord(AcSubmissionRecord record) {
-        GenericRecord avroRecord = new GenericData.Record(SCHEMA);
         
-        avroRecord.put("username", record.getUsername());
-        avroRecord.put("title", record.getTitle());
-        avroRecord.put("titleSlug", record.getTitleSlug());
-        avroRecord.put("timestamp", record.getTimestamp());
-        avroRecord.put("runtimeMs", record.getRuntimeMs());
-        avroRecord.put("memoryMb", record.getMemoryMb());
-        avroRecord.put("difficultyLevel", record.getDifficultyLevel());
-        avroRecord.put("tags", record.getTags());
-        avroRecord.put("acRate", record.getAcRate());
-        avroRecord.put("totalAccepted", record.getTotalAccepted());
-        avroRecord.put("totalSubmitted", record.getTotalSubmitted());
-        
-        return avroRecord;
+        log.info("Wrote {} records to {}", records.size(), fileName);
+        return fileName;
     }
 }

@@ -29,10 +29,6 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
     private final S3Service s3Service;
 
     public StreamHandler() {
-        // Suppress Hadoop native library warning
-        System.setProperty("hadoop.home.dir", "/tmp");
-        System.setProperty("java.library.path", "/tmp");
-        
         DynamoDbClient dynamoClient = DynamoDbClient.create();
         DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamoClient)
@@ -90,7 +86,7 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
                 // Upload to S3
                 s3Service.uploadParquetFile(tempFilePath, records.getFirst().getTimestamp());
             }
-            
+
             return String.format("Successfully processed %d records", records.size());
             
         } catch (Exception e) {

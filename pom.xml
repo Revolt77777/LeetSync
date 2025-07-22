@@ -22,6 +22,7 @@
         <module>rest-api-server</module>
         <module>infrastructure</module>
         <module>etl-stream-lambda</module>
+        <module>stats-lambda</module>
     </modules>
 
     <name>LeetSync Project Root</name>

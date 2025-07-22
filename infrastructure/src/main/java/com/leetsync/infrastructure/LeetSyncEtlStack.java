@@ -67,6 +67,7 @@ public class LeetSyncEtlStack extends Stack {
         // S3 permissions for Parquet bucket
         parquetBucket.grantWrite(etlFunction);
 
+
         // Add DynamoDB Stream event source
         etlFunction.addEventSource(DynamoEventSource.Builder.create(acSubmissionsTable)
                 .startingPosition(StartingPosition.LATEST)

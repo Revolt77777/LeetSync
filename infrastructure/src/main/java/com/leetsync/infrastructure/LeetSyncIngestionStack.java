@@ -12,6 +12,7 @@ import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
 import software.constructs.Construct;
 
+import java.util.List;
 import java.util.Map;
 
 public class LeetSyncIngestionStack extends Stack {
@@ -41,6 +42,7 @@ public class LeetSyncIngestionStack extends Stack {
         // Grant permissions to DynamoDB tables
         acSubmissionsTable.grantWriteData(ingestionFn);
         usersTable.grantReadWriteData(ingestionFn);
+
 
         // EventBridge Rule - Daily at 6 AM Seattle time (UTC-8/UTC-7)
         Rule dailyRule = Rule.Builder.create(this, "DailyIngestionRule")
