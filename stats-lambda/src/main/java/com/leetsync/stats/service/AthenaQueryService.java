@@ -57,6 +57,7 @@ public class AthenaQueryService {
             WITH daily_submissions AS (
                 SELECT 
                     titleSlug,
+                    title,
                     difficultyLevel,
                     tags,
                     AVG(runtimeMs) as avgRuntimeMs,
@@ -66,7 +67,7 @@ public class AthenaQueryService {
                 AND year = '%s' 
                 AND month = '%s' 
                 AND day = '%s'
-                GROUP BY titleSlug, difficultyLevel, tags
+                GROUP BY titleSlug, title, difficultyLevel, tags
             ),
             exploded_tags AS (
                 SELECT 
@@ -111,6 +112,18 @@ public class AthenaQueryService {
                 AVG(CAST(difficultyLevel AS DOUBLE)) as avg_difficulty
             FROM exploded_tags
             GROUP BY tag
+            
+            UNION ALL
+            
+            SELECT 
+                'problems' as metric_type,
+                title as metric_key,
+                1 as count,
+                0.0 as total_runtime,
+                0.0 as total_memory,
+                0.0 as avg_difficulty
+            FROM daily_submissions
+            ORDER BY metric_type, metric_key
             """, username, dateParts[0], dateParts[1], dateParts[2]);
             
         return executeQueryAndGetResults(query);

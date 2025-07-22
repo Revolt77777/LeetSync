@@ -2,7 +2,6 @@ package com.leetsync.stats.service;
 
 import com.leetsync.stats.model.DailyStats;
 import com.leetsync.stats.model.TotalStats;
-import com.leetsync.stats.model.SevenDayStats;
 import com.leetsync.stats.model.StreakStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,6 @@ public class StatsCacheService {
     private final DynamoDbEnhancedClient enhancedClient;
     private final DynamoDbTable<DailyStats> dailyTable;
     private final DynamoDbTable<TotalStats> totalTable;
-    private final DynamoDbTable<SevenDayStats> sevenDayTable;
     private final DynamoDbTable<StreakStats> streakTable;
     
     public StatsCacheService() {
@@ -48,7 +46,6 @@ public class StatsCacheService {
                 .build();
         this.dailyTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(DailyStats.class));
         this.totalTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(TotalStats.class));
-        this.sevenDayTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(SevenDayStats.class));
         this.streakTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(StreakStats.class));
     }
     
@@ -58,7 +55,6 @@ public class StatsCacheService {
                 .build();
         this.dailyTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(DailyStats.class));
         this.totalTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(TotalStats.class));
-        this.sevenDayTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(SevenDayStats.class));
         this.streakTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(StreakStats.class));
     }
     
@@ -100,7 +96,7 @@ public class StatsCacheService {
         try {
             dailyStats.setUsername(username);
             dailyStats.setStatType("DAILY#" + date.format(DateTimeFormatter.ISO_LOCAL_DATE));
-            dailyStats.setTtl(Instant.now().plusSeconds(30 * 24 * 60 * 60).getEpochSecond());
+            dailyStats.setTtl(Instant.now().plusSeconds(7 * 24 * 60 * 60).getEpochSecond());
             
             dailyTable.putItem(dailyStats);
             
@@ -144,34 +140,6 @@ public class StatsCacheService {
         }
     }
     
-    public void saveSevenDayStats(String username, SevenDayStats sevenDayStats) {
-        try {
-            sevenDayStats.setUsername(username);
-            sevenDayStats.setStatType("SEVEN_DAY");
-            sevenDayStats.setTtl(Instant.now().plusSeconds(25 * 60 * 60).getEpochSecond());
-            
-            sevenDayTable.putItem(sevenDayStats);
-            
-        } catch (Exception e) {
-            logger.error("Error saving 7-day stats for user: {}", username, e);
-            throw new RuntimeException("Failed to save 7-day stats", e);
-        }
-    }
-    
-    public SevenDayStats getSevenDayStats(String username) {
-        try {
-            Key key = Key.builder()
-                    .partitionValue(username)
-                    .sortValue("SEVEN_DAY")
-                    .build();
-                    
-            return sevenDayTable.getItem(key);
-            
-        } catch (Exception e) {
-            logger.error("Error fetching 7-day stats for user: {}", username, e);
-            throw new RuntimeException("Failed to fetch 7-day stats", e);
-        }
-    }
     
     public void saveStreakStats(String username, StreakStats streakStats) {
         try {

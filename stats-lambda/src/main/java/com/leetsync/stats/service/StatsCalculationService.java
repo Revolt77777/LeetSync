@@ -2,8 +2,8 @@ package com.leetsync.stats.service;
 
 import com.leetsync.stats.model.DailyStats;
 import com.leetsync.stats.model.TotalStats;
-import com.leetsync.stats.model.SevenDayStats;
 import com.leetsync.stats.model.StreakStats;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.athena.model.ResultSet;
@@ -33,7 +33,7 @@ public class StatsCalculationService {
     
     /**
      * Calculate all stats for a user based on yesterday's data
-     * Single entry point that calculates daily, total, 7-day, and streak stats
+     * Single entry point that calculates daily, total, and streak stats
      */
     public void calculateAllStatsForUser(String username, LocalDate yesterday) {
         logger.info("Calculating all stats for user: {} on {}", username, yesterday);
@@ -55,16 +55,12 @@ public class StatsCalculationService {
         // Step 3: Calculate total stats (fetch existing + update)
         TotalStats totalStats = calculateTotalStats(username, rawData);
         
-        // Step 4: Calculate 7-day stats (fetch recent daily + calculate averages)
-        SevenDayStats sevenDayStats = calculateSevenDayStats(username, yesterday, rawData);
-        
-        // Step 5: Calculate streak stats
+        // Step 4: Calculate streak stats
         StreakStats streakStats = calculateStreakStats(username, yesterday, rawData.totalSolvedCount > 0);
         
-        // Step 6: Save all stats
+        // Step 5: Save all stats
         cacheService.saveDailyStats(username, yesterday, dailyStats);
         cacheService.saveTotalStats(username, totalStats);
-        cacheService.saveSevenDayStats(username, sevenDayStats);
         cacheService.saveStreakStats(username, streakStats);
         
         logger.info("Successfully calculated and saved all stats for user: {}", username);
@@ -102,6 +98,10 @@ public class StatsCalculationService {
                         data.tagTotals.put(metricKey, new TagTotalData(count, totalRuntime, totalMemory, avgDifficulty));
                     }
                     break;
+                    
+                case "problems":
+                    data.problemTitles.add(metricKey);
+                    break;
             }
         }
         
@@ -126,7 +126,7 @@ public class StatsCalculationService {
             new DailyStats.DifficultyLevel(hardCount, hardPct)
         );
         
-        return new DailyStats(username, date, total, difficulty);
+        return new DailyStats(username, date, total, difficulty, rawData.problemTitles);
     }
     
     /**
@@ -232,47 +232,6 @@ public class StatsCalculationService {
     }
     
     /**
-     * Calculate 7-day rolling averages
-     */
-    private SevenDayStats calculateSevenDayStats(String username, LocalDate yesterday, YesterdayRawData rawData) {
-        // Fetch last 6 days of daily stats (plus today = 7 days)
-        List<DailyStats> recentDays = cacheService.getRecentDailyStats(username, 6);
-        
-        // Calculate 7-day average (including yesterday)
-        int totalSolved = rawData.totalSolvedCount;
-        for (DailyStats day : recentDays) {
-            totalSolved += day.getYesterdaySolvedCount();
-        }
-        double sevenDayAverage = (double) totalSolved / (recentDays.size() + 1); // +1 for yesterday
-        
-        // For tag averages, we need to query Athena for 7-day tag data
-        // This is more complex, let's implement a simplified version for now
-        Map<String, SevenDayStats.TagAverage> tagAverages = calculateSevenDayTagAverages(username, yesterday, rawData);
-        
-        return new SevenDayStats(username, sevenDayAverage, tagAverages);
-    }
-    
-    /**
-     * Calculate 7-day tag averages (simplified implementation)
-     */
-    private Map<String, SevenDayStats.TagAverage> calculateSevenDayTagAverages(String username, LocalDate yesterday, YesterdayRawData rawData) {
-        // For now, use yesterday's data as 7-day average (will be improved)
-        Map<String, SevenDayStats.TagAverage> tagAverages = new HashMap<>();
-        
-        for (Map.Entry<String, TagTotalData> entry : rawData.tagTotals.entrySet()) {
-            TagTotalData data = entry.getValue();
-            tagAverages.put(entry.getKey(), new SevenDayStats.TagAverage(
-                data.count,
-                data.totalRuntimeMs / data.count,
-                data.totalMemoryMb / data.count,
-                data.totalDifficultyLevel / data.count
-            ));
-        }
-        
-        return tagAverages;
-    }
-    
-    /**
      * Calculate streak information
      */
     private StreakStats calculateStreakStats(String username, LocalDate yesterday, boolean solvedYesterday) {
@@ -322,6 +281,7 @@ public class StatsCalculationService {
         int totalSolvedCount = 0;
         Map<String, Integer> difficultyBreakdown = new HashMap<>(); // difficultyLevel -> count
         Map<String, TagTotalData> tagTotals = new HashMap<>(); // tag -> totals
+        List<String> problemTitles = new ArrayList<>(); // problem titles solved
     }
     
     private static class TagTotalData {

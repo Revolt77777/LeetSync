@@ -4,6 +4,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+import java.util.List;
 
 /**
  * Daily stats for a specific date - stored as DAILY#{date}
@@ -21,17 +22,17 @@ public class DailyStats {
     private String date; // YYYY-MM-DD
     private int yesterdaySolvedCount;
     private DifficultyBreakdown difficulty;
+    private List<String> problemsSolved; // List of problem titles solved yesterday
     
     public DailyStats() {}
     
-    public DailyStats(String username, String date, int yesterdaySolvedCount, DifficultyBreakdown difficulty) {
+    public DailyStats(String username, String date, int yesterdaySolvedCount, DifficultyBreakdown difficulty, List<String> problemsSolved) {
         this.username = username;
         this.statType = "DAILY#" + date;
         this.date = date;
         this.yesterdaySolvedCount = yesterdaySolvedCount;
         this.difficulty = difficulty;
-        // Set 30-day TTL
-        this.ttl = java.time.Instant.now().plusSeconds(30 * 24 * 60 * 60).getEpochSecond();
+        this.problemsSolved = problemsSolved;
     }
     
     
@@ -60,6 +61,10 @@ public class DailyStats {
     @DynamoDbAttribute("difficulty")
     public DifficultyBreakdown getDifficulty() { return difficulty; }
     public void setDifficulty(DifficultyBreakdown difficulty) { this.difficulty = difficulty; }
+    
+    @DynamoDbAttribute("problemsSolved")
+    public List<String> getProblemsSolved() { return problemsSolved; }
+    public void setProblemsSolved(List<String> problemsSolved) { this.problemsSolved = problemsSolved; }
     
     @DynamoDbBean
     public static class DifficultyBreakdown {

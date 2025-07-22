@@ -23,8 +23,7 @@ import java.util.List;
  * Step 1: Extract Yesterday's Data
  * Step 2: Calculate Daily Metrics  
  * Step 3: Update Running Totals
- * Step 4: Calculate 7-Day Stats
- * Step 5: Calculate Streaks
+ * Step 4: Calculate Streaks
  */
 public class StatsHandler implements RequestHandler<ScheduledEvent, String> {
     
@@ -110,7 +109,7 @@ public class StatsHandler implements RequestHandler<ScheduledEvent, String> {
     private void processUserStats(String username, LocalDate yesterday) {
         logger.debug("Processing stats for user: {} on {}", username, yesterday);
         
-        // Single entry point calculates all stats (daily, total, 7-day, streaks)
+        // Single entry point calculates all stats (daily, total, streaks)
         calculationService.calculateAllStatsForUser(username, yesterday);
         
         logger.debug("Completed stats processing for user: {}", username);
