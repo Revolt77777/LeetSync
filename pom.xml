@@ -22,6 +22,7 @@
         <module>infrastructure</module>
         <module>etl-stream-lambda</module>
         <module>stats-lambda</module>
+        <module>recommendation-lambda</module>
     </modules>
 
     <name>LeetSync Project Root</name>

@@ -24,6 +24,7 @@ public class LeetSyncDataStack extends Stack {
     private final Table problemsTable;
     private final Table usersTable;
     private final Table userStatsCacheTable;
+    private final Table recommendationsCacheTable;
     private final Bucket parquetBucket;
     private final Bucket athenaResultsBucket;
 
@@ -100,6 +101,22 @@ public class LeetSyncDataStack extends Stack {
                 .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
                 .build();
 
+        // RecommendationsCache Table - Daily AI recommendations with TTL
+        this.recommendationsCacheTable = Table.Builder.create(this, "RecommendationsCacheTable")
+                .tableName("RecommendationsCache")
+                .partitionKey(Attribute.builder()
+                        .name("username")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("date")
+                        .type(AttributeType.STRING)
+                        .build())
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .timeToLiveAttribute("ttl")
+                .removalPolicy(software.amazon.awscdk.RemovalPolicy.DESTROY)
+                .build();
+
         // S3 bucket for Parquet files
         this.parquetBucket = Bucket.Builder.create(this, "ParquetBucket")
                 .bucketName("leetsync-parquet")
@@ -148,6 +165,10 @@ public class LeetSyncDataStack extends Stack {
     
     public Table getUserStatsCacheTable() {
         return userStatsCacheTable;
+    }
+    
+    public Table getRecommendationsCacheTable() {
+        return recommendationsCacheTable;
     }
     
     public Bucket getParquetBucket() {

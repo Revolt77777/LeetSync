@@ -149,10 +149,10 @@ public class LeetSyncAnalyticsStack extends Stack {
         this.dailyStatsRule = Rule.Builder.create(this, "DailyStatsRule")
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
-                                .minute("0")
-                                .hour("15")  // 7 AM Seattle = 15:00 UTC (1 hour after ETL/ingestion)
+                                .minute("30")
+                                .hour("14")  // 7:30 AM Seattle
                                 .build()))
-                .description("Trigger stats calculation daily at 7 AM Seattle time (1 hour after ETL)")
+                .description("Trigger stats calculation daily at 7:30 AM Seattle time (0.5 hour after ETL)")
                 .build();
 
         // Add Lambda as target

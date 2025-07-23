@@ -49,9 +49,9 @@ public class LeetSyncIngestionStack extends Stack {
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
                                 .minute("0")
-                                .hour("14")  // 6 AM Seattle = 14:00 UTC (standard time)
+                                .hour("14")  // 7 AM Seattle = 14:00 UTC (standard time)
                                 .build()))
-                .description("Trigger ingestion lambda daily at 6 AM Seattle time")
+                .description("Trigger ingestion lambda daily at 7 AM Seattle time")
                 .build();
 
         // Add Lambda as target

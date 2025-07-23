@@ -72,7 +72,7 @@ public class LeetSyncEtlStack extends Stack {
         etlFunction.addEventSource(DynamoEventSource.Builder.create(acSubmissionsTable)
                 .startingPosition(StartingPosition.LATEST)
                 .batchSize(100)
-                .maxBatchingWindow(Duration.minutes(5)) // Wait 5 minutes or 100 records
+                .maxBatchingWindow(Duration.minutes(1)) // Wait 5 minutes or 100 records
                 .build());
     }
 
