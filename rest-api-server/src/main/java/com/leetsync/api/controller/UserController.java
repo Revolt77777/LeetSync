@@ -1,7 +1,7 @@
 package com.leetsync.api.controller;
 
 import com.leetsync.api.service.UserService;
-import com.leetsync.shared.model.User;
+import com.leetsync.api.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

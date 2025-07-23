@@ -1,39 +1,28 @@
 package com.leetsync.api.repository;
 
-import com.leetsync.shared.model.User;
+import com.leetsync.api.model.User;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
 import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository for accessing Users table using Enhanced Client with annotated models
+ * Each service owns its models - true microservices pattern
+ */
 @Repository
 public class UserRepository {
-
-    private static final TableSchema<User> TABLE_SCHEMA =
-            TableSchema.builder(User.class)
-                    .newItemSupplier(User::new)
-                    .addAttribute(String.class, a -> a.name("username")
-                            .getter(User::getUsername)
-                            .setter(User::setUsername)
-                            .tags(StaticAttributeTags.primaryPartitionKey()))
-                    .addAttribute(Long.class, a -> a.name("createdAt")
-                            .getter(User::getCreatedAt)
-                            .setter(User::setCreatedAt))
-                    .addAttribute(Long.class, a -> a.name("lastSync")
-                            .getter(User::getLastSync)
-                            .setter(User::setLastSync))
-                    .build();
 
     private final DynamoDbTable<User> table;
 
     public UserRepository(DynamoDbEnhancedClient enhancedClient) {
-        this.table = enhancedClient.table("Users", TABLE_SCHEMA);
+        // Use annotated model directly - no static schema needed
+        this.table = enhancedClient.table("Users", TableSchema.fromBean(User.class));
     }
 
     public List<User> findAll() {
