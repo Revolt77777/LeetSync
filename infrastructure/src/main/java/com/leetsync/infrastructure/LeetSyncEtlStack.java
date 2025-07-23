@@ -68,10 +68,11 @@ public class LeetSyncEtlStack extends Stack {
         parquetBucket.grantWrite(etlFunction);
 
 
-        // Add DynamoDB Stream event source
+        // Add DynamoDB Stream event source with batching to reduce S3 requests
         etlFunction.addEventSource(DynamoEventSource.Builder.create(acSubmissionsTable)
                 .startingPosition(StartingPosition.LATEST)
                 .batchSize(100)
+                .maxBatchingWindow(Duration.minutes(5)) // Wait 5 minutes or 100 records
                 .build());
     }
 

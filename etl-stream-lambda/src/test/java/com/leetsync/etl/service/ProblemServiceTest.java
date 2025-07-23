@@ -1,6 +1,6 @@
 package com.leetsync.etl.service;
 
-import com.leetsync.shared.model.Problem;
+import com.leetsync.etl.model.Problem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -96,11 +96,13 @@ class ProblemServiceTest {
     }
 
     private Problem createTestProblem(String titleSlug) {
-        Problem problem = new Problem();
-        problem.setTitleSlug(titleSlug);
-        problem.setDifficultyLevel(1); // Easy
-        problem.setTotalAccepted(1000000L);
-        problem.setTotalSubmitted(1908234L);
-        return problem;
+        return new Problem(
+            123L,      // questionId
+            1,         // frontendQuestionId
+            titleSlug, // titleSlug
+            1000000L,  // totalAccepted
+            1908234L,  // totalSubmitted
+            1          // difficultyLevel (Easy)
+        );
     }
 }

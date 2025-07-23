@@ -1,6 +1,6 @@
 package com.leetsync.ingestion.service;
 
-import com.leetsync.shared.model.AcSubmission;
+import com.leetsync.ingestion.model.AcSubmission;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

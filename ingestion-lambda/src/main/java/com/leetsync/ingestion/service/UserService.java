@@ -1,6 +1,6 @@
 package com.leetsync.ingestion.service;
 
-import com.leetsync.shared.model.User;
+// No User model needed - this service only reads usernames and updates timestamps
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 

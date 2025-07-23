@@ -22,12 +22,6 @@
     </properties>
 
     <dependencies>
-        <!-- Shared models -->
-        <dependency>
-            <groupId>com.leetsync</groupId>
-            <artifactId>shared</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 
         <!-- AWS Lambda Runtime -->
         <dependency>

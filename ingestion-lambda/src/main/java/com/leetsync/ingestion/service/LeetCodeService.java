@@ -1,7 +1,7 @@
 package com.leetsync.ingestion.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.leetsync.shared.model.AcSubmission;
+import com.leetsync.ingestion.model.AcSubmission;
 
 import java.io.IOException;
 import java.net.URI;

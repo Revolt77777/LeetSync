@@ -1,32 +1,36 @@
 package com.leetsync.problem.service;
 
-import com.leetsync.shared.model.Problem;
+import com.leetsync.problem.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class ProblemDynamoService {
 
     private static final Logger log = LoggerFactory.getLogger(ProblemDynamoService.class);
 
+    private final DynamoDbTable<Problem> table;
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
 
-    public ProblemDynamoService(DynamoDbClient dynamoDbClient, String tableName) {
+    public ProblemDynamoService(DynamoDbEnhancedClient enhancedClient, DynamoDbClient dynamoDbClient, String tableName) {
+        this.table = enhancedClient.table(tableName, TableSchema.fromBean(Problem.class));
         this.dynamoDbClient = dynamoDbClient;
         this.tableName = tableName;
     }
@@ -124,53 +128,10 @@ public class ProblemDynamoService {
             return false;
         }
 
-        Map<String, AttributeValue> item = new HashMap<>();
-        item.put("titleSlug", AttributeValue.fromS(problem.getTitleSlug())); // Primary key
-        
-        // Map the new fields according to the updated Problem model
-        if (problem.getQuestionId() != null) {
-            item.put("questionId", AttributeValue.fromN(problem.getQuestionId().toString()));
-        }
-        if (problem.getFrontendQuestionId() != null) {
-            item.put("frontendQuestionId", AttributeValue.fromN(problem.getFrontendQuestionId().toString()));
-        }
-        if (problem.getTotalAccepted() != null) {
-            item.put("totalAccepted", AttributeValue.fromN(problem.getTotalAccepted().toString()));
-        }
-        if (problem.getTotalSubmitted() != null) {
-            item.put("totalSubmitted", AttributeValue.fromN(problem.getTotalSubmitted().toString()));
-        }
-        if (problem.getDifficultyLevel() != null) {
-            item.put("difficultyLevel", AttributeValue.fromN(problem.getDifficultyLevel().toString()));
-        }
-        if (problem.getDifficulty() != null) {
-            item.put("difficulty", AttributeValue.fromS(problem.getDifficulty()));
-        }
-        if (problem.getAcRate() != null) {
-            item.put("acRate", AttributeValue.fromN(problem.getAcRate().toString()));
-        }
-        
-        // Store topic tags if present
-        if (problem.getTopicTags() != null && !problem.getTopicTags().isEmpty()) {
-            List<AttributeValue> topicTagsList = new ArrayList<>();
-            for (Problem.TopicTag tag : problem.getTopicTags()) {
-                Map<String, AttributeValue> tagMap = new HashMap<>();
-                tagMap.put("name", AttributeValue.fromS(tag.getName()));
-                tagMap.put("slug", AttributeValue.fromS(tag.getSlug()));
-                topicTagsList.add(AttributeValue.fromM(tagMap));
-            }
-            item.put("topicTags", AttributeValue.fromL(topicTagsList));
-        }
-
-        PutItemRequest putRequest = PutItemRequest.builder()
-                .tableName(tableName)
-                .item(item)
-                .build();
-
         try {
-            dynamoDbClient.putItem(putRequest);
+            table.putItem(problem);
             return true;
-        } catch (DynamoDbException e) {
+        } catch (Exception e) {
             log.error("DynamoDB error while storing problem {}: {}", problem.getTitleSlug(), e.getMessage());
             return false;
         }

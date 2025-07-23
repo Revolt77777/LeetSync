@@ -10,7 +10,7 @@ public class InfrastructureApp {
         LeetSyncDataStack dataStack = new LeetSyncDataStack(app, "LeetSyncDataStack");
         
         // Pass table references to other stacks
-        new LeetSyncApiStack(app, "LeetSyncApiStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable());
+        new LeetSyncApiStack(app, "LeetSyncApiStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable(), dataStack.getUserStatsCacheTable());
         new LeetSyncIngestionStack(app, "LeetSyncIngestionStack", dataStack.getAcSubmissionsTable(), dataStack.getUsersTable());
         new LeetSyncProblemStack(app, "LeetSyncProblemStack", dataStack.getProblemsTable());
         new LeetSyncEtlStack(app, "LeetSyncEtlStack", dataStack.getAcSubmissionsTable(), dataStack.getProblemsTable(), dataStack.getParquetBucket());

@@ -8,8 +8,7 @@ import com.leetsync.etl.model.AcSubmissionRecord;
 import com.leetsync.etl.service.ParquetFileWriter;
 import com.leetsync.etl.service.ProblemService;
 import com.leetsync.etl.service.S3Service;
-import com.leetsync.shared.model.AcSubmission;
-import com.leetsync.shared.model.Problem;
+import com.leetsync.etl.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -56,16 +55,12 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
                     continue;
                 }
                 
-                AcSubmission submission = parseAcSubmission(streamRecord.getDynamodb().getNewImage());
-                if (submission == null) {
-                    log.warn("Failed to parse AcSubmission from stream record");
+                AcSubmissionRecord record = parseAndEnrichRecord(streamRecord.getDynamodb().getNewImage());
+                if (record == null) {
+                    log.warn("Failed to parse and enrich record from stream");
                     continue;
                 }
                 
-                // Enrich with problem data
-                Problem problem = problemService.getProblem(submission.getTitleSlug());
-                
-                AcSubmissionRecord record = createEnrichedRecord(submission, problem);
                 records.add(record);
                 
             } catch (Exception e) {
@@ -95,50 +90,39 @@ public class StreamHandler implements RequestHandler<DynamodbEvent, String> {
         }
     }
     
-    private AcSubmission parseAcSubmission(Map<String, AttributeValue> item) {
+    private AcSubmissionRecord parseAndEnrichRecord(Map<String, AttributeValue> item) {
         try {
-            String username = item.get("username").getS();
-            String title = item.get("title").getS();
-            String titleSlug = item.get("titleSlug").getS();
-            long timestamp = Long.parseLong(item.get("timestamp").getN());
-            int runtimeMs = Integer.parseInt(item.get("runtimeMs").getN());
-            double memoryMb = Double.parseDouble(item.get("memoryMb").getN());
-
-            return new AcSubmission(username, title, titleSlug, timestamp, runtimeMs, memoryMb);
+            // Parse submission data directly into record
+            AcSubmissionRecord record = new AcSubmissionRecord();
+            record.setUsername(item.get("username").getS());
+            record.setTitle(item.get("title").getS());
+            record.setTitleSlug(item.get("titleSlug").getS());
+            record.setTimestamp(Long.parseLong(item.get("timestamp").getN()));
+            record.setRuntimeMs(Integer.parseInt(item.get("runtimeMs").getN()));
+            record.setMemoryMb(Double.parseDouble(item.get("memoryMb").getN()));
+            
+            // Enrich with problem data
+            Problem problem = problemService.getProblem(record.getTitleSlug());
+            if (problem != null) {
+                record.setDifficultyLevel(problem.getDifficultyLevel());
+                record.setAcRate(problem.getAcRate());
+                record.setTotalAccepted(problem.getTotalAccepted());
+                record.setTotalSubmitted(problem.getTotalSubmitted());
+                
+                // Convert topic tags to string array
+                if (problem.getTopicTags() != null) {
+                    String[] tags = problem.getTopicTags().stream()
+                            .map(Problem.TopicTag::getName)
+                            .toArray(String[]::new);
+                    record.setTags(tags);
+                }
+            }
+            
+            return record;
             
         } catch (Exception e) {
-            log.error("Error parsing AcSubmission: {}", e.getMessage());
+            log.error("Error parsing and enriching record: {}", e.getMessage());
             return null;
         }
-    }
-    
-    private AcSubmissionRecord createEnrichedRecord(AcSubmission submission, Problem problem) {
-        AcSubmissionRecord record = new AcSubmissionRecord();
-        
-        // Copy submission data
-        record.setUsername(submission.getUsername());
-        record.setTitle(submission.getTitle());
-        record.setTitleSlug(submission.getTitleSlug());
-        record.setTimestamp(submission.getTimestamp());
-        record.setRuntimeMs(submission.getRuntimeMs());
-        record.setMemoryMb(submission.getMemoryMb());
-        
-        // Enrich with problem data (if available)
-        if (problem != null) {
-            record.setDifficultyLevel(problem.getDifficultyLevel());
-            record.setAcRate(problem.getAcRate());
-            record.setTotalAccepted(problem.getTotalAccepted());
-            record.setTotalSubmitted(problem.getTotalSubmitted());
-            
-            // Convert topic tags to string array
-            if (problem.getTopicTags() != null) {
-                String[] tags = problem.getTopicTags().stream()
-                        .map(Problem.TopicTag::getName)
-                        .toArray(String[]::new);
-                record.setTags(tags);
-            }
-        }
-        
-        return record;
     }
 }

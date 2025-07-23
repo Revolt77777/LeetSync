@@ -19,11 +19,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.leetsync</groupId>
-			<artifactId>shared</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 		<!-- AWS Lambda and DynamoDB -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -33,6 +28,11 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>dynamodb</artifactId>
+			<version>2.25.28</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>dynamodb-enhanced</artifactId>
 			<version>2.25.28</version>
 		</dependency>
 		<!-- Dev and Testing -->

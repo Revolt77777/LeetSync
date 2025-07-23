@@ -1,66 +1,22 @@
 package com.leetsync.etl.service;
 
-import com.leetsync.shared.model.Problem;
+import com.leetsync.etl.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
 
 public class ProblemService {
     
     private static final Logger log = LoggerFactory.getLogger(ProblemService.class);
     
-    private static final TableSchema<Problem> TABLE_SCHEMA =
-            TableSchema.builder(Problem.class)
-                    .newItemSupplier(Problem::new)
-                    .addAttribute(String.class, a -> a.name("titleSlug")
-                            .getter(Problem::getTitleSlug)
-                            .setter(Problem::setTitleSlug)
-                            .tags(StaticAttributeTags.primaryPartitionKey()))
-                    .addAttribute(Long.class, a -> a.name("questionId")
-                            .getter(Problem::getQuestionId)
-                            .setter(Problem::setQuestionId))
-                    .addAttribute(Integer.class, a -> a.name("frontendQuestionId")
-                            .getter(Problem::getFrontendQuestionId)
-                            .setter(Problem::setFrontendQuestionId))
-                    .addAttribute(Long.class, a -> a.name("totalAccepted")
-                            .getter(Problem::getTotalAccepted)
-                            .setter(Problem::setTotalAccepted))
-                    .addAttribute(Long.class, a -> a.name("totalSubmitted")
-                            .getter(Problem::getTotalSubmitted)
-                            .setter(Problem::setTotalSubmitted))
-                    .addAttribute(Integer.class, a -> a.name("difficultyLevel")
-                            .getter(Problem::getDifficultyLevel)
-                            .setter(Problem::setDifficultyLevel))
-                    .addAttribute(String.class, a -> a.name("difficulty")
-                            .getter(Problem::getDifficulty)
-                            .setter(Problem::setDifficulty))
-                    .addAttribute(Double.class, a -> a.name("acRate")
-                            .getter(Problem::getAcRate)
-                            .setter(Problem::setAcRate))
-                    .addAttribute(EnhancedType.listOf(
-                            EnhancedType.documentOf(Problem.TopicTag.class, 
-                                TableSchema.builder(Problem.TopicTag.class)
-                                    .newItemSupplier(Problem.TopicTag::new)
-                                    .addAttribute(String.class, a -> a.name("name")
-                                            .getter(Problem.TopicTag::getName)
-                                            .setter(Problem.TopicTag::setName))
-                                    .addAttribute(String.class, a -> a.name("slug")
-                                            .getter(Problem.TopicTag::getSlug)
-                                            .setter(Problem.TopicTag::setSlug))
-                                    .build())), a -> a.name("topicTags")
-                            .getter(Problem::getTopicTags)
-                            .setter(Problem::setTopicTags))
-                    .build();
-    
     private final DynamoDbTable<Problem> problemTable;
 
     public ProblemService(DynamoDbEnhancedClient enhancedClient, String problemsTableName) {
-        this.problemTable = enhancedClient.table(problemsTableName, TABLE_SCHEMA);
+        // Use annotated model directly - no complex static schema needed
+        this.problemTable = enhancedClient.table(problemsTableName, TableSchema.fromBean(Problem.class));
     }
 
     public Problem getProblem(String titleSlug) {

@@ -2,7 +2,7 @@ package com.leetsync.problem.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leetsync.problem.model.LeetCodeProblemsResponse;
-import com.leetsync.shared.model.Problem;
+import com.leetsync.problem.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

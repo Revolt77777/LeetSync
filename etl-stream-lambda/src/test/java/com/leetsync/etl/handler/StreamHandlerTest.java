@@ -8,7 +8,7 @@ import com.leetsync.etl.model.AcSubmissionRecord;
 import com.leetsync.etl.service.ParquetFileWriter;
 import com.leetsync.etl.service.ProblemService;
 import com.leetsync.etl.service.S3Service;
-import com.leetsync.shared.model.Problem;
+import com.leetsync.etl.model.Problem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -139,11 +139,14 @@ class StreamHandlerTest {
 
     // Helper method to create test Problem
     private Problem createTestProblem() {
-        Problem problem = new Problem();
-        problem.setTitleSlug("two-sum");
-        problem.setDifficultyLevel(1); // Easy
-        problem.setTotalAccepted(1000000L);
-        problem.setTotalSubmitted(1908234L);
+        Problem problem = new Problem(
+            123L,      // questionId
+            1,         // frontendQuestionId
+            "two-sum", // titleSlug
+            1000000L,  // totalAccepted
+            1908234L,  // totalSubmitted
+            1          // difficultyLevel (Easy)
+        );
         
         // Add topic tags
         Problem.TopicTag tag1 = new Problem.TopicTag();

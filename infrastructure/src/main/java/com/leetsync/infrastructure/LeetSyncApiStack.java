@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class LeetSyncApiStack extends Stack {
 
-    public LeetSyncApiStack(final Construct scope, final String id, final Table acSubmissionsTable, final Table usersTable) {
+    public LeetSyncApiStack(final Construct scope, final String id, final Table acSubmissionsTable, final Table usersTable, final Table userStatsCacheTable) {
         super(scope, id);
 
         /* 2 ▶ Lambda packaging: Spring Boot JAR asset */
@@ -31,12 +31,14 @@ public class LeetSyncApiStack extends Stack {
                 .code(Code.fromAsset("../rest-api-server/target/leetsync-api-1.0.0.jar"))
                 .environment(Map.of(
                         "ACSUBMISSIONS_TABLE_NAME", acSubmissionsTable.getTableName(),
-                        "USERS_TABLE_NAME", usersTable.getTableName()))
+                        "USERS_TABLE_NAME", usersTable.getTableName(),
+                        "STATS_CACHE_TABLE_NAME", userStatsCacheTable.getTableName()))
                 .build();
 
         /* least-privilege access */
         acSubmissionsTable.grantReadWriteData(apiFn);
         usersTable.grantReadWriteData(apiFn);
+        userStatsCacheTable.grantReadData(apiFn); // Read-only access for stats
 
         /* 3 ▶ HTTP API with Lambda integration */
         HttpApi api = HttpApi.Builder.create(this, "LeetSyncHttpApi").build();

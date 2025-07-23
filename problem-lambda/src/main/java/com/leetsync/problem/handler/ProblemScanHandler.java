@@ -2,9 +2,10 @@ package com.leetsync.problem.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.leetsync.shared.model.Problem;
+import com.leetsync.problem.model.Problem;
 import com.leetsync.problem.service.LeetCodeProblemService;
 import com.leetsync.problem.service.ProblemDynamoService;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.io.IOException;
@@ -18,9 +19,14 @@ public class ProblemScanHandler implements RequestHandler<Void, String> {
     private final ProblemDynamoService problemDynamoService;
 
     public ProblemScanHandler() {
+        DynamoDbClient dynamoClient = DynamoDbClient.create();
+        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
+                .dynamoDbClient(dynamoClient)
+                .build();
         this.leetCodeProblemService = new LeetCodeProblemService();
         this.problemDynamoService = new ProblemDynamoService(
-                DynamoDbClient.create(), 
+                enhancedClient,
+                dynamoClient, 
                 System.getenv("PROBLEMS_TABLE_NAME")
         );
     }

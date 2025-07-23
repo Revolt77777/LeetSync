@@ -2,10 +2,11 @@ package com.leetsync.ingestion.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.leetsync.shared.model.AcSubmission;
+import com.leetsync.ingestion.model.AcSubmission;
 import com.leetsync.ingestion.service.LeetCodeService;
 import com.leetsync.ingestion.service.DynamoService;
 import com.leetsync.ingestion.service.UserService;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.io.IOException;
@@ -20,8 +21,11 @@ public class SyncHandler implements RequestHandler<Void, String> {
     public SyncHandler() {
         // Manual dependency wiring (simple and fast for Lambda)
         DynamoDbClient dynamoClient = DynamoDbClient.create();
+        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
+                .dynamoDbClient(dynamoClient)
+                .build();
         this.leetCodeService = new LeetCodeService();
-        this.dynamoService = new DynamoService(dynamoClient, System.getenv("ACSUBMISSIONS_TABLE_NAME"));
+        this.dynamoService = new DynamoService(enhancedClient, System.getenv("ACSUBMISSIONS_TABLE_NAME"));
         this.userService = new UserService(dynamoClient, System.getenv("USERS_TABLE_NAME"));
     }
 

@@ -8,7 +8,7 @@ import com.leetsync.etl.model.AcSubmissionRecord;
 import com.leetsync.etl.service.ParquetFileWriter;
 import com.leetsync.etl.service.ProblemService;
 import com.leetsync.etl.service.S3Service;
-import com.leetsync.shared.model.Problem;
+import com.leetsync.etl.model.Problem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -215,11 +215,14 @@ class StreamHandlerIntegrationTest {
     }
 
     private Problem createTestProblem(String titleSlug) {
-        Problem problem = new Problem();
-        problem.setTitleSlug(titleSlug);
-        problem.setDifficultyLevel(1); // Easy
-        problem.setTotalAccepted(1000000L);
-        problem.setTotalSubmitted(1908234L);
+        Problem problem = new Problem(
+            123L,    // questionId
+            1,       // frontendQuestionId  
+            titleSlug,
+            1000000L, // totalAccepted
+            1908234L, // totalSubmitted
+            1         // difficultyLevel (Easy)
+        );
         
         Problem.TopicTag tag1 = new Problem.TopicTag();
         tag1.setName("Array");

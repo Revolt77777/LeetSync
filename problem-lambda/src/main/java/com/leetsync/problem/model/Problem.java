@@ -1,5 +1,16 @@
-package com.leetsync.shared.model;
+package com.leetsync.problem.model;
 
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
+import java.util.List;
+
+/**
+ * Problem model for problem service with DynamoDB annotations
+ * This service owns this model and can evolve it independently
+ */
+@DynamoDbBean
 public class Problem {
     
     private Long questionId;
@@ -8,11 +19,11 @@ public class Problem {
     private Long totalAccepted;
     private Long totalSubmitted;
     private Integer difficultyLevel;
-    
     private String difficulty;
     private Double acRate;
-    private java.util.List<TopicTag> topicTags;
+    private List<TopicTag> topicTags;
     
+    @DynamoDbBean
     public static class TopicTag {
         private String name;
         private String slug;
@@ -24,8 +35,11 @@ public class Problem {
             this.slug = slug;
         }
         
+        @DynamoDbAttribute("name")
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
+        
+        @DynamoDbAttribute("slug")
         public String getSlug() { return slug; }
         public void setSlug(String slug) { this.slug = slug; }
     }
@@ -59,40 +73,48 @@ public class Problem {
         return (double) accepted / submitted * 100;
     }
 
-    // Getters and setters
+    @DynamoDbAttribute("questionId")
     public Long getQuestionId() { return questionId; }
     public void setQuestionId(Long questionId) { this.questionId = questionId; }
     
+    @DynamoDbAttribute("frontendQuestionId")
     public Integer getFrontendQuestionId() { return frontendQuestionId; }
     public void setFrontendQuestionId(Integer frontendQuestionId) { this.frontendQuestionId = frontendQuestionId; }
     
+    @DynamoDbPartitionKey
     public String getTitleSlug() { return titleSlug; }
     public void setTitleSlug(String titleSlug) { this.titleSlug = titleSlug; }
     
+    @DynamoDbAttribute("totalAccepted")
     public Long getTotalAccepted() { return totalAccepted; }
     public void setTotalAccepted(Long totalAccepted) { 
         this.totalAccepted = totalAccepted;
         this.acRate = calculateAcRate(totalAccepted, this.totalSubmitted);
     }
     
+    @DynamoDbAttribute("totalSubmitted")
     public Long getTotalSubmitted() { return totalSubmitted; }
     public void setTotalSubmitted(Long totalSubmitted) { 
         this.totalSubmitted = totalSubmitted;
         this.acRate = calculateAcRate(this.totalAccepted, totalSubmitted);
     }
     
+    @DynamoDbAttribute("difficultyLevel")
     public Integer getDifficultyLevel() { return difficultyLevel; }
     public void setDifficultyLevel(Integer difficultyLevel) { 
         this.difficultyLevel = difficultyLevel;
         this.difficulty = mapDifficultyToString(difficultyLevel);
     }
 
+    @DynamoDbAttribute("difficulty")
     public String getDifficulty() { return difficulty; }
     public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     
+    @DynamoDbAttribute("acRate")
     public Double getAcRate() { return acRate; }
     public void setAcRate(Double acRate) { this.acRate = acRate; }
     
-    public java.util.List<TopicTag> getTopicTags() { return topicTags; }
-    public void setTopicTags(java.util.List<TopicTag> topicTags) { this.topicTags = topicTags; }
+    @DynamoDbAttribute("topicTags")
+    public List<TopicTag> getTopicTags() { return topicTags; }
+    public void setTopicTags(List<TopicTag> topicTags) { this.topicTags = topicTags; }
 }
