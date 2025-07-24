@@ -229,10 +229,8 @@ The real cost is **GitHub Actions minutes**, but you get 2,000 free minutes/mont
 4. **Push to develop branch** to test the pipeline
 5. **Push to main branch** to deploy to production
 
-Your modern CI/CD pipeline will:
+CI/CD pipeline will:
 - ✅ Deploy to test environment in **3 minutes**  
 - ✅ Run real integration tests in **5 minutes**
 - ✅ Deploy to production in **3 minutes**
 - ✅ Total time: **~11 minutes** from commit to production
-
-This gives you **Netflix-level CI/CD** for your personal project! 🎉
