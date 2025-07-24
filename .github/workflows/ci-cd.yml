@@ -49,8 +49,13 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            */target/*.jar
-            */dependency-reduced-pom.xml
+            ingestion-lambda/target/*.jar
+            problem-lambda/target/*.jar
+            etl-stream-lambda/target/*.jar
+            stats-lambda/target/*.jar
+            recommendation-lambda/target/*.jar
+            rest-api-server/target/*.jar
+            infrastructure/target/*.jar
           retention-days: 7
 
   # ================================
@@ -100,19 +105,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: artifacts/
-          
-      - name: Restore artifacts to modules
-        run: |
-          for module in ingestion-lambda problem-lambda etl-stream-lambda stats-lambda recommendation-lambda rest-api-server infrastructure; do
-            if [ -d "artifacts/${module}" ]; then
-              mkdir -p ${module}/target
-              cp -r artifacts/${module}/* ${module}/target/ 2>/dev/null || true
-            fi
-          done
-          
-      - name: Build for deployment
-        run: ./mvnw clean package -B -DskipTests
+          path: .
         
       - name: Deploy to test environment
         run: |
@@ -298,19 +291,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: artifacts/
-          
-      - name: Restore artifacts to modules
-        run: |
-          for module in ingestion-lambda problem-lambda etl-stream-lambda stats-lambda recommendation-lambda rest-api-server infrastructure; do
-            if [ -d "artifacts/${module}" ]; then
-              mkdir -p ${module}/target
-              cp -r artifacts/${module}/* ${module}/target/ 2>/dev/null || true
-            fi
-          done
-          
-      - name: Build for production deployment
-        run: ./mvnw clean package -B -DskipTests
+          path: .
         
       - name: Deploy to production
         run: |
