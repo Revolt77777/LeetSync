@@ -16,23 +16,23 @@ import java.util.Map;
 
 public class LeetSyncProblemStack extends Stack {
 
-    public LeetSyncProblemStack(final Construct scope, final String id, final Table problemsTable) {
-        this(scope, id, null, problemsTable);
+    public LeetSyncProblemStack(final Construct scope, final String id, final String resourceSuffix, final Table problemsTable) {
+        this(scope, id, resourceSuffix, null, problemsTable);
     }
 
-    public LeetSyncProblemStack(final Construct scope, final String id, final StackProps props, final Table problemsTable) {
+    public LeetSyncProblemStack(final Construct scope, final String id, final String resourceSuffix, final StackProps props, final Table problemsTable) {
         super(scope, id, props);
 
         // Problem Scan Lambda Function
         Function problemScanFn = Function.Builder.create(this, "ProblemScanFunction")
-                .functionName("leetsync-problem-lambda")
+                .functionName("leetsync-problem-lambda" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.problem.handler.ProblemScanHandler")
                 .memorySize(512)
                 .timeout(Duration.minutes(15))
                 .code(Code.fromAsset("../problem-lambda/target/problem-lambda-1.0.0.jar"))
                 .environment(Map.of(
-                        "PROBLEMS_TABLE_NAME", "Problems",
+                        "PROBLEMS_TABLE_NAME", problemsTable.getTableName(),
                         "LOG_LEVEL", "INFO",
                         "LEETCODE_GRAPHQL_URL", "https://leetcode.com/graphql"))
                 .build();
@@ -42,6 +42,7 @@ public class LeetSyncProblemStack extends Stack {
 
         // EventBridge Rule - Weekly at 5 AM Seattle time every Monday
         Rule weeklyRule = Rule.Builder.create(this, "WeeklyProblemScanRule")
+                .ruleName("leetsync-weekly-problem-scan-rule" + resourceSuffix)
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
                                 .minute("0")

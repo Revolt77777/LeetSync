@@ -21,18 +21,18 @@ public class LeetSyncRecommendationStack extends Stack {
 
     private final Function recommendationFunction;
 
-    public LeetSyncRecommendationStack(final Construct scope, final String id, 
+    public LeetSyncRecommendationStack(final Construct scope, final String id, final String resourceSuffix,
                                      final Table userStatsCacheTable, final Table recommendationsCacheTable) {
-        this(scope, id, null, userStatsCacheTable, recommendationsCacheTable);
+        this(scope, id, resourceSuffix, null, userStatsCacheTable, recommendationsCacheTable);
     }
 
-    public LeetSyncRecommendationStack(final Construct scope, final String id, 
+    public LeetSyncRecommendationStack(final Construct scope, final String id, final String resourceSuffix,
                                      final StackProps props, final Table userStatsCacheTable, final Table recommendationsCacheTable) {
         super(scope, id, props);
 
         // Recommendation Lambda Function
         this.recommendationFunction = Function.Builder.create(this, "RecommendationFunction")
-                .functionName("leetsync-recommendation-lambda")
+                .functionName("leetsync-recommendation-lambda" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .code(Code.fromAsset("../recommendation-lambda/target/recommendation-lambda-1.0.0.jar"))
                 .handler("com.leetsync.recommendation.handler.RecommendationHandler::handleRequest")
@@ -59,6 +59,7 @@ public class LeetSyncRecommendationStack extends Stack {
 
         // CloudWatch Events Rule for daily execution (6 AM PT = 1 PM UTC)
         Rule dailyRule = Rule.Builder.create(this, "DailyRecommendationRule")
+                .ruleName("leetsync-daily-recommendation-rule" + resourceSuffix)
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
                                 .minute("0")

@@ -21,18 +21,18 @@ public class LeetSyncEtlStack extends Stack {
 
     private final Function etlFunction;
 
-    public LeetSyncEtlStack(final Construct scope, final String id,
+    public LeetSyncEtlStack(final Construct scope, final String id, final String resourceSuffix,
                             final Table acSubmissionsTable, final Table problemsTable, final Bucket parquetBucket) {
-        this(scope, id, null, acSubmissionsTable, problemsTable, parquetBucket);
+        this(scope, id, resourceSuffix, null, acSubmissionsTable, problemsTable, parquetBucket);
     }
 
-    public LeetSyncEtlStack(final Construct scope, final String id, final StackProps props,
+    public LeetSyncEtlStack(final Construct scope, final String id, final String resourceSuffix, final StackProps props,
                             final Table acSubmissionsTable, final Table problemsTable, final Bucket parquetBucket) {
         super(scope, id, props);
 
         // Create ETL Lambda function
         this.etlFunction = Function.Builder.create(this, "EtlStreamFunction")
-                .functionName("leetsync-etl-stream")
+                .functionName("leetsync-etl-stream" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .code(Code.fromAsset("../etl-stream-lambda/target/etl-stream-lambda-1.0.0.jar"))
                 .handler("com.leetsync.etl.handler.StreamHandler::handleRequest")

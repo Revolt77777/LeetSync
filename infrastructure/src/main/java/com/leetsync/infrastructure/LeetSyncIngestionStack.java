@@ -17,16 +17,16 @@ import java.util.Map;
 
 public class LeetSyncIngestionStack extends Stack {
 
-    public LeetSyncIngestionStack(final Construct scope, final String id, final Table acSubmissionsTable, final Table usersTable) {
-        this(scope, id, null, acSubmissionsTable, usersTable);
+    public LeetSyncIngestionStack(final Construct scope, final String id, final String resourceSuffix, final Table acSubmissionsTable, final Table usersTable) {
+        this(scope, id, resourceSuffix, null, acSubmissionsTable, usersTable);
     }
 
-    public LeetSyncIngestionStack(final Construct scope, final String id, final StackProps props, final Table acSubmissionsTable, final Table usersTable) {
+    public LeetSyncIngestionStack(final Construct scope, final String id, final String resourceSuffix, final StackProps props, final Table acSubmissionsTable, final Table usersTable) {
         super(scope, id, props);
 
         // Ingestion Lambda Function
         Function ingestionFn = Function.Builder.create(this, "IngestionFunction")
-                .functionName("leetsync-ingestion-lambda")
+                .functionName("leetsync-ingestion-lambda" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.ingestion.handler.SyncHandler")
                 .memorySize(256)
@@ -46,6 +46,7 @@ public class LeetSyncIngestionStack extends Stack {
 
         // EventBridge Rule - Daily at 6 AM Seattle time (UTC-8/UTC-7)
         Rule dailyRule = Rule.Builder.create(this, "DailyIngestionRule")
+                .ruleName("leetsync-daily-ingestion-rule" + resourceSuffix)
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
                                 .minute("0")

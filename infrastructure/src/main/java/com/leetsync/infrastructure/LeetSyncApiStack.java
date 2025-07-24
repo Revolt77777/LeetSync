@@ -18,12 +18,12 @@ import java.util.Map;
 
 public class LeetSyncApiStack extends Stack {
 
-    public LeetSyncApiStack(final Construct scope, final String id, final Table acSubmissionsTable, final Table usersTable, final Table userStatsCacheTable, final Table recommendationsCacheTable) {
+    public LeetSyncApiStack(final Construct scope, final String id, final String resourceSuffix, final Table acSubmissionsTable, final Table usersTable, final Table userStatsCacheTable, final Table recommendationsCacheTable) {
         super(scope, id);
 
         /* 2 ▶ Lambda packaging: Spring Boot JAR asset */
         Function apiFn = Function.Builder.create(this, "RestApiFunction")
-                .functionName("leetsync-api-server")
+                .functionName("leetsync-api-server" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.api.StreamLambdaHandler")
                 .memorySize(1024)

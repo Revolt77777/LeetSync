@@ -29,15 +29,19 @@ public class LeetSyncDataStack extends Stack {
     private final Bucket athenaResultsBucket;
 
     public LeetSyncDataStack(final Construct scope, final String id) {
-        this(scope, id, null);
+        this(scope, id, "", null);
     }
 
-    public LeetSyncDataStack(final Construct scope, final String id, final StackProps props) {
+    public LeetSyncDataStack(final Construct scope, final String id, final String resourceSuffix) {
+        this(scope, id, resourceSuffix, null);
+    }
+
+    public LeetSyncDataStack(final Construct scope, final String id, final String resourceSuffix, final StackProps props) {
         super(scope, id, props);
 
         // AcSubmissions Table - Primary data store with streams for ETL
         this.acSubmissionsTable = Table.Builder.create(this, "AcSubmissionsTable")
-                .tableName("AcSubmissions")
+                .tableName("AcSubmissions" + resourceSuffix)
                 .partitionKey(Attribute.builder()
                         .name("username")
                         .type(AttributeType.STRING)
@@ -65,7 +69,7 @@ public class LeetSyncDataStack extends Stack {
 
         // Problems Table - LeetCode problem catalog
         this.problemsTable = Table.Builder.create(this, "ProblemsTable")
-                .tableName("Problems")
+                .tableName("Problems" + resourceSuffix)
                 .partitionKey(Attribute.builder()
                         .name("titleSlug")
                         .type(AttributeType.STRING)
@@ -76,7 +80,7 @@ public class LeetSyncDataStack extends Stack {
 
         // Users Table - User management
         this.usersTable = Table.Builder.create(this, "UsersTable")
-                .tableName("Users")
+                .tableName("Users" + resourceSuffix)
                 .partitionKey(Attribute.builder()
                         .name("username")
                         .type(AttributeType.STRING)
@@ -87,7 +91,7 @@ public class LeetSyncDataStack extends Stack {
 
         // UserStatsCache Table - Calculated user statistics with TTL
         this.userStatsCacheTable = Table.Builder.create(this, "UserStatsCacheTable")
-                .tableName("UserStatsCache")
+                .tableName("UserStatsCache" + resourceSuffix)
                 .partitionKey(Attribute.builder()
                         .name("username")
                         .type(AttributeType.STRING)
@@ -103,7 +107,7 @@ public class LeetSyncDataStack extends Stack {
 
         // RecommendationsCache Table - Daily AI recommendations with TTL
         this.recommendationsCacheTable = Table.Builder.create(this, "RecommendationsCacheTable")
-                .tableName("RecommendationsCache")
+                .tableName("RecommendationsCache" + resourceSuffix)
                 .partitionKey(Attribute.builder()
                         .name("username")
                         .type(AttributeType.STRING)
@@ -119,7 +123,7 @@ public class LeetSyncDataStack extends Stack {
 
         // S3 bucket for Parquet files
         this.parquetBucket = Bucket.Builder.create(this, "ParquetBucket")
-                .bucketName("leetsync-parquet")
+                .bucketName("leetsync-parquet" + resourceSuffix)
                 .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
                 .lifecycleRules(List.of(
                     LifecycleRule.builder()
@@ -138,7 +142,7 @@ public class LeetSyncDataStack extends Stack {
 
         // S3 bucket for Athena query results
         this.athenaResultsBucket = Bucket.Builder.create(this, "AthenaResultsBucket")
-                .bucketName("leetsync-athena-results")
+                .bucketName("leetsync-athena-results" + resourceSuffix)
                 .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
                 .lifecycleRules(List.of(
                     LifecycleRule.builder()

@@ -33,13 +33,13 @@ public class LeetSyncAnalyticsStack extends Stack {
     private final CfnDatabase glueDatabase;
     private final CfnCrawler glueCrawler;
 
-    public LeetSyncAnalyticsStack(final Construct scope, final String id, 
+    public LeetSyncAnalyticsStack(final Construct scope, final String id, final String resourceSuffix,
                                  final Bucket parquetBucket, final Bucket athenaResultsBucket, 
                                  final Table userStatsCacheTable) {
-        this(scope, id, null, parquetBucket, athenaResultsBucket, userStatsCacheTable);
+        this(scope, id, resourceSuffix, null, parquetBucket, athenaResultsBucket, userStatsCacheTable);
     }
 
-    public LeetSyncAnalyticsStack(final Construct scope, final String id, final StackProps props,
+    public LeetSyncAnalyticsStack(final Construct scope, final String id, final String resourceSuffix, final StackProps props,
                                  final Bucket parquetBucket, final Bucket athenaResultsBucket,
                                  final Table userStatsCacheTable) {
         super(scope, id, props);
@@ -50,7 +50,7 @@ public class LeetSyncAnalyticsStack extends Stack {
         this.glueDatabase = CfnDatabase.Builder.create(this, "LeetSyncGlueDatabase")
                 .catalogId(this.getAccount())
                 .databaseInput(CfnDatabase.DatabaseInputProperty.builder()
-                        .name("leetsync")
+                        .name("leetsync" + resourceSuffix.replace("-", "_"))
                         .description("Database for LeetSync parquet data")
                         .build())
                 .build();
@@ -68,7 +68,7 @@ public class LeetSyncAnalyticsStack extends Stack {
 
         // Create Glue Crawler with schedule (10 minutes before stats Lambda)
         this.glueCrawler = CfnCrawler.Builder.create(this, "LeetSyncParquetCrawler")
-                .name("leetsync-parquet-crawler")
+                .name("leetsync-parquet-crawler" + resourceSuffix)
                 .role(crawlerRole.getRoleArn())
                 .databaseName(glueDatabase.getRef())
                 .targets(CfnCrawler.TargetsProperty.builder()
@@ -88,7 +88,7 @@ public class LeetSyncAnalyticsStack extends Stack {
 
         // Create Athena WorkGroup for stats queries
         this.athenaWorkGroup = CfnWorkGroup.Builder.create(this, "LeetSyncWorkGroup")
-                .name("leetsync-stats")
+                .name("leetsync-stats" + resourceSuffix)
                 .description("WorkGroup for LeetSync stats analytics queries")
                 .workGroupConfiguration(CfnWorkGroup.WorkGroupConfigurationProperty.builder()
                         .resultConfiguration(CfnWorkGroup.ResultConfigurationProperty.builder()
@@ -100,7 +100,7 @@ public class LeetSyncAnalyticsStack extends Stack {
 
         // Stats Lambda Function
         this.statsFunction = Function.Builder.create(this, "StatsFunction")
-                .functionName("leetsync-stats-calculator")
+                .functionName("leetsync-stats-calculator" + resourceSuffix)
                 .runtime(Runtime.JAVA_21)
                 .handler("com.leetsync.stats.handler.StatsHandler::handleRequest")
                 .memorySize(1024)
@@ -147,6 +147,7 @@ public class LeetSyncAnalyticsStack extends Stack {
 
         // EventBridge Rule - Daily at 7 AM Seattle time (15:00 UTC, 1 hour after ETL)
         this.dailyStatsRule = Rule.Builder.create(this, "DailyStatsRule")
+                .ruleName("leetsync-daily-stats-rule" + resourceSuffix)
                 .schedule(Schedule.cron(
                         software.amazon.awscdk.services.events.CronOptions.builder()
                                 .minute("30")
