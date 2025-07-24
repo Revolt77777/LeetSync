@@ -49,13 +49,13 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            ingestion-lambda/target/*.jar
-            problem-lambda/target/*.jar
-            etl-stream-lambda/target/*.jar
-            stats-lambda/target/*.jar
-            recommendation-lambda/target/*.jar
-            rest-api-server/target/*.jar
-            infrastructure/target/*.jar
+            ingestion-lambda/target/
+            problem-lambda/target/
+            etl-stream-lambda/target/
+            stats-lambda/target/
+            recommendation-lambda/target/
+            rest-api-server/target/
+            infrastructure/target/
           retention-days: 7
 
   # ================================
@@ -106,6 +106,12 @@ jobs:
         with:
           name: build-artifacts
           path: .
+          
+      - name: Verify JAR files exist
+        run: |
+          echo "Checking for required JAR files..."
+          find . -name "*.jar" -type f
+          ls -la */target/*.jar 2>/dev/null || echo "No JAR files found in expected locations"
         
       - name: Deploy to test environment
         run: |
@@ -292,6 +298,12 @@ jobs:
         with:
           name: build-artifacts
           path: .
+          
+      - name: Verify JAR files exist
+        run: |
+          echo "Checking for required JAR files..."
+          find . -name "*.jar" -type f
+          ls -la */target/*.jar 2>/dev/null || echo "No JAR files found in expected locations"
         
       - name: Deploy to production
         run: |
