@@ -110,11 +110,18 @@ jobs:
         run: |
           cd infrastructure
           if [ -f cdk-outputs-test.json ]; then
-            API_URL=$(jq -r '.LeetSyncApiStackTest.ApiGatewayUrl // "https://test-api.leetsync.com"' cdk-outputs-test.json)
-            echo "api-url=$API_URL" >> $GITHUB_OUTPUT
-            echo "✅ Test environment deployed at: $API_URL"
+            API_URL=$(jq -r '."LeetSync-testApiStack".ApiEndpoint // empty' cdk-outputs-test.json)
+            if [ -n "$API_URL" ]; then
+              echo "api-url=$API_URL" >> $GITHUB_OUTPUT
+              echo "✅ Test environment deployed at: $API_URL"
+            else
+              echo "❌ Failed to extract API URL from CDK outputs"
+              cat cdk-outputs-test.json
+              exit 1
+            fi
           else
-            echo "api-url=https://test-api.leetsync.com" >> $GITHUB_OUTPUT
+            echo "❌ CDK outputs file not found"
+            exit 1
           fi
 
   # ================================
