@@ -34,7 +34,7 @@ public class LeetSyncEtlStack extends Stack {
         this.etlFunction = Function.Builder.create(this, "EtlStreamFunction")
                 .functionName("leetsync-etl-stream")
                 .runtime(Runtime.JAVA_21)
-                .code(Code.fromAsset("../etl-stream-lambda/target/etl-stream-lambda-1.0.0-shaded.jar"))
+                .code(Code.fromAsset("../etl-stream-lambda/target/etl-stream-lambda-1.0.0.jar"))
                 .handler("com.leetsync.etl.handler.StreamHandler::handleRequest")
                 .memorySize(512)
                 .timeout(Duration.minutes(3))

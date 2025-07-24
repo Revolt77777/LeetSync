@@ -105,7 +105,7 @@ public class LeetSyncAnalyticsStack extends Stack {
                 .handler("com.leetsync.stats.handler.StatsHandler::handleRequest")
                 .memorySize(1024)
                 .timeout(Duration.minutes(15))
-                .code(Code.fromAsset("../stats-lambda/target/stats-lambda-1.0.0-shaded.jar"))
+                .code(Code.fromAsset("../stats-lambda/target/stats-lambda-1.0.0.jar"))
                 .environment(Map.of(
                     "PARQUET_BUCKET_NAME", parquetBucket.getBucketName(),
                     "ATHENA_RESULTS_BUCKET_NAME", athenaResultsBucket.getBucketName(),
