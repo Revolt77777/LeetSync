@@ -3,12 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.6</version> <!-- or higher 3.x version -->
-        <relativePath/>
-    </parent>
 
     <groupId>com.leetsync</groupId>
     <artifactId>leetsync</artifactId>
@@ -27,13 +21,22 @@
 
     <name>LeetSync Project Root</name>
 
-    <!-- Add Spring Boot BOM here -->
+    <!-- Common dependency management for all modules -->
     <dependencyManagement>
         <dependencies>
+            <!-- Jackson BOM for consistent versions across modules -->
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.2.6</version>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.17.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- AWS SDK BOM for consistent versions -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.25.28</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
