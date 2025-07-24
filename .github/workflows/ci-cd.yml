@@ -9,7 +9,7 @@ on:
 env:
   JAVA_VERSION: '21'
   AWS_REGION: us-west-2
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
 
 jobs:
   # ================================
@@ -43,20 +43,6 @@ jobs:
         
       - name: Build all modules
         run: ./mvnw clean package -B -DskipTests
-        
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            ingestion-lambda/target/
-            problem-lambda/target/
-            etl-stream-lambda/target/
-            stats-lambda/target/
-            recommendation-lambda/target/
-            rest-api-server/target/
-            infrastructure/target/
-          retention-days: 7
 
   # ================================
   # STAGE 2: DEPLOY TO TEST ENVIRONMENT
@@ -101,17 +87,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: LeetSyncDeployTest
           
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
         with:
-          name: build-artifacts
-          path: .
-          
-      - name: Verify JAR files exist
-        run: |
-          echo "Checking for required JAR files..."
-          find . -name "*.jar" -type f
-          ls -la */target/*.jar 2>/dev/null || echo "No JAR files found in expected locations"
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            
+      - name: Build for deployment
+        run: ./mvnw clean package -B -DskipTests
         
       - name: Deploy to test environment
         run: |
@@ -293,17 +278,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: LeetSyncDeployProd
           
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
         with:
-          name: build-artifacts
-          path: .
-          
-      - name: Verify JAR files exist
-        run: |
-          echo "Checking for required JAR files..."
-          find . -name "*.jar" -type f
-          ls -la */target/*.jar 2>/dev/null || echo "No JAR files found in expected locations"
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            
+      - name: Build for deployment
+        run: ./mvnw clean package -B -DskipTests
         
       - name: Deploy to production
         run: |
