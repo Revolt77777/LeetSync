@@ -233,16 +233,13 @@ jobs:
             response.json
             
           # Check lambda execution status
-          if [ -f response.json ]; then
-            LAMBDA_STATUS=$(cat response.json | jq -r '.StatusCode // "missing"')
-            if [[ "$LAMBDA_STATUS" == "200" ]]; then
-              echo "✅ Lambda executed successfully"
-            else
-              echo "⚠️ Lambda execution status: $LAMBDA_STATUS"
-            fi
+          STATUS=$(echo "$META_JSON" | jq -r '.StatusCode')
+          if [[ "$STATUS" != "200" ]]; then
+            echo "::error title=Lambda invocation failed::StatusCode=$STATUS"
+            exit 1
           fi
-          
-          echo "✅ Data pipeline integration test completed"
+
+          echo "Lambda returned OK (StatusCode=$STATUS)"
 
   # ================================
   # STAGE 4: DEPLOY TO PRODUCTION
