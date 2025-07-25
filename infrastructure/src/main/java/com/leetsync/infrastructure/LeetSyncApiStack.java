@@ -28,7 +28,7 @@ public class LeetSyncApiStack extends Stack {
                 .handler("com.leetsync.api.StreamLambdaHandler")
                 .memorySize(1024)
                 .timeout(Duration.seconds(15))
-                .code(Code.fromAsset("../rest-api-server/target/leetsync-api-1.0.0.jar"))
+                .code(Code.fromAsset("../rest-api-server/target/leetsync-api-3.2.6.jar"))
                 .environment(Map.of(
                         "ACSUBMISSIONS_TABLE_NAME", acSubmissionsTable.getTableName(),
                         "USERS_TABLE_NAME", usersTable.getTableName(),
