@@ -223,25 +223,23 @@ jobs:
         run: |
           echo "📊 Testing end-to-end data pipeline..."
           
-          # Test Lambda Invocation (synthetic transaction)
           echo "Testing ingestion lambda invocation..."
-          aws lambda invoke \
-            --function-name leetsync-ingestion-lambda-test \
+          if aws lambda invoke \
+            --function-name "leetsync-ingestion-lambda-test" \
             --payload '{}' \
-            --region ${{ env.AWS_REGION }} \
             --log-type Tail \
-            response.json
-            
-          # Check lambda execution status
-          STATUS=$(echo "$META_JSON" | jq -r '.StatusCode')
-          if [[ "$STATUS" != "200" ]]; then
-            echo "::error title=Lambda invocation failed::StatusCode=$STATUS"
+            --region "${{ env.AWS_REGION }}" \
+            /tmp/lambda-response.json; then
+            echo "✅ Lambda invocation successful"
+            echo "Response payload:"
+            cat /tmp/lambda-response.json
+            echo "### ✅ Ingestion Lambda test passed" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "❌ Lambda invocation failed"
             exit 1
           fi
 
-          echo "Lambda returned OK (StatusCode=$STATUS)"
-
-  # ================================
+    # ================================
   # STAGE 4: DEPLOY TO PRODUCTION
   # ================================
   
