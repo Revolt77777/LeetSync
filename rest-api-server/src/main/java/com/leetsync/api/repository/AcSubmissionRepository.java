@@ -21,7 +21,11 @@ public class AcSubmissionRepository {
 
     public AcSubmissionRepository(DynamoDbEnhancedClient enhancedClient) {
         // Use annotated model directly - no static schema needed
-        this.table = enhancedClient.table("AcSubmissions", TableSchema.fromBean(AcSubmission.class));
+        String tableName = System.getenv("ACSUBMISSIONS_TABLE_NAME");
+        if (tableName == null) {
+            tableName = "AcSubmissions"; // Default fallback for local development
+        }
+        this.table = enhancedClient.table(tableName, TableSchema.fromBean(AcSubmission.class));
     }
 
     /* ---------- Public API ---------- */

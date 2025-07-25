@@ -22,7 +22,11 @@ public class UserRepository {
 
     public UserRepository(DynamoDbEnhancedClient enhancedClient) {
         // Use annotated model directly - no static schema needed
-        this.table = enhancedClient.table("Users", TableSchema.fromBean(User.class));
+        String tableName = System.getenv("USERS_TABLE_NAME");
+        if (tableName == null) {
+            tableName = "Users"; // Default fallback for local development
+        }
+        this.table = enhancedClient.table(tableName, TableSchema.fromBean(User.class));
     }
 
     public List<User> findAll() {
